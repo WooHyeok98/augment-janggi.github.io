@@ -36,6 +36,10 @@ h1{font-family:"Noto Serif KR",serif;font-size:22px;margin:2px 0 8px}
 .stat #tm{margin-left:auto;color:var(--ac2)}
 .bd{position:relative;width:100%;aspect-ratio:9/10;background:radial-gradient(circle at 30% 18%,#ecca88,#d3a455 58%,#b78a40);border-radius:16px;touch-action:none;user-select:none;margin:10px 0;box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 3px rgba(70,40,10,.3),0 0 0 1px rgba(240,185,104,.3)}
 .bd svg{position:absolute;inset:0;width:100%;height:100%}
+.ob{position:relative;width:100%;aspect-ratio:1;background:radial-gradient(circle at 30% 18%,#ecca88,#d3a455 58%,#b78a40);border-radius:16px;touch-action:manipulation;user-select:none;margin:10px 0;cursor:pointer;box-shadow:0 20px 50px rgba(0,0,0,.6),inset 0 0 0 3px rgba(70,40,10,.3),0 0 0 1px rgba(240,185,104,.3)}
+.ob svg{position:absolute;inset:0;width:100%;height:100%}
+button.gcard{color:var(--fg);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.gcard.sel{border-color:var(--ac);box-shadow:var(--glow)}
 .pc{position:absolute;transform:translate(-50%,-50%);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6dc,#f2dca4);border:3px solid;display:flex;align-items:center;justify-content:center;font-weight:800;box-sizing:border-box;pointer-events:none;font-size:min(4.6vw,24px);z-index:1;box-shadow:0 3px 6px rgba(0,0,0,.4)}
 .b{color:#1a5fb4;border-color:#1a5fb4}.r{color:#c01c28;border-color:#c01c28}
 .fz{filter:grayscale(1);opacity:.55}.ar{box-shadow:0 0 0 3px gold,0 3px 6px rgba(0,0,0,.4)}
@@ -69,7 +73,7 @@ const dstep=(x,y,dx,dy)=>dg(x,y)&&dg(x+dx,y+dy)&&pal(x,y)===pal(x+dx,y+dy);
 const sd=c=>c===c.toUpperCase()?0:1;
 const sh=own=>[...Array(23).keys()].filter(k=>!own.includes(k)&&k!==9&&k!==3).sort(()=>Math.random()-.5).slice(0,3);
 const newS=g=>({b:INIT,t:0,q:0,g,n:0,y:0,ph:'set',sa:[-1,-1],i0:INIT,cats:[],fire:[],fz:null,of:[sh([]),sh([])],ch:[[],[]],pk:[[],[]],u:[[],[]],lg:''});
-let pv=null,AC=null,bgmOn=true,sfxOn=true,bgmT=0,bgmStep=0,LM=[],usn=null,aiAt=0,solo=false,quiet=false,aiBusy=0,lastKey='',tS=0,seen=0,wasGone=false,S=null,me=-1,id=Math.random().toString(36).slice(2,8),opp=null,R=null,ROOM=null,mode=null,sel=null,tg=[],pk=[],fxn=0,drag=null,AR=0,code='';
+let game=null,OM=null,omMe=0,og=-1,oph='',otk=-1,oaiAt=0,pv=null,AC=null,bgmOn=true,sfxOn=true,bgmT=0,bgmStep=0,LM=[],usn=null,aiAt=0,solo=false,quiet=false,aiBusy=0,lastKey='',tS=0,seen=0,wasGone=false,S=null,me=-1,id=Math.random().toString(36).slice(2,8),opp=null,R=null,ROOM=null,mode=null,sel=null,tg=[],pk=[],fxn=0,drag=null,AR=0,code='';
 const has=(s,k)=>S.ch[s].includes(k),used=(s,k)=>S.u[s].filter(v=>v===k).length>=(LIM[k]||1),av=(s,k)=>has(s,k)&&!used(s,k);
 const M=()=>S&&S.y?3:mode,cv=q=>sd(q)?q.toUpperCase():q.toLowerCase();
 const GL=c=>{const s=sd(c);return{R:'車',H:'馬',E:'象',G:'士',K:s?'漢':'楚',C:'包',P:s?'兵':'卒'}[c.toUpperCase()]};
@@ -213,6 +217,51 @@ function initSnd(){const d=document.createElement('div');d.style.cssText='positi
   b.onclick=()=>{set(!get());up();ac();if(get()&&ic==='🔊')sfx('sel')};d.appendChild(b)};
  mk('🎵',()=>bgmOn,v=>{bgmOn=v;sv('jg_bgm',v)});mk('🔊',()=>sfxOn,v=>{sfxOn=v;sv('jg_sfx',v)});
  document.body.appendChild(d);document.addEventListener('pointerdown',()=>ac());setInterval(bgmTick,100)}
+const newO=g=>({b:'.'.repeat(225),t:0,n:0,g,ph:'play',w:-1,lm:-1,wl:[]});
+function pg(g){game=g;ren()}
+function go1(){game==='omok'?osolo():solo1()}
+function osolo(){solo=true;game='omok';R={emit(){}};omMe=0;opp='ai';seen=Date.now();OM=newO(0);code='';ren()}
+function otick(){if(!R||spec)return;R.emit('os',{id,O:OM});if(OM)specs.forEach(c=>{if(c.open)c.send({t:'os',d:{id,O:OM}})})}
+function orx(d){if(!d||!d.O||d.id===id)return;seen=Date.now();opp=d.id;const r=d.O;
+ if(spec){if(JSON.stringify(r)!==JSON.stringify(OM)){OM=r;oren()}return}
+ if(!OM||(r.g||0)>(OM.g||0)||((r.g||0)===(OM.g||0)&&r.n>OM.n)){OM=r;oren()}}
+function owin(b,i){const c=b[i],x=i%15,y=i/15|0;for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){const l=[i];for(const sg of[1,-1]){let X=x+dx*sg,Y=y+dy*sg;while(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]===c){l.push(Y*15+X);X+=dx*sg;Y+=dy*sg}}if(l.length>=5)return l}return null}
+function omMove(i,c){const a=OM.b.split('');a[i]=c?'o':'x';OM.b=a.join('');OM.n++;OM.lm=i;const w=owin(OM.b,i);
+ if(w){OM.ph='over';OM.w=c;OM.wl=w}else if(OM.n>=225){OM.ph='over';OM.w=-1}else OM.t=1-OM.t;otick();oren()}
+function oplace(i){if(spec||!OM||OM.ph!=='play'||OM.t!==omMe||OM.b[i]!=='.')return;omMove(i,omMe)}
+function orematch(){OM=newO((OM.g||0)+1);otick();oren()}
+function oscore(b,i,c){const x=i%15,y=i/15|0;let t=0;for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){let n=1,open=0;
+ for(const sg of[1,-1]){let X=x+dx*sg,Y=y+dy*sg;while(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]===c){n++;X+=dx*sg;Y+=dy*sg}if(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]==='.')open++}
+ t+=n>=5?1e5:n===4?(open===2?1e4:open===1?1e3:0):n===3?(open===2?1e3:open===1?100:0):n===2?(open===2?100:open===1?10:0):1}return t}
+function oAI(){const b=OM.b;if(OM.n===0)return 112;let best=-1,bs=-1;
+ for(let i=0;i<225;i++){if(b[i]!=='.')continue;const x=i%15,y=i/15|0;let near=0;
+  for(let dx=-2;dx<3&&!near;dx++)for(let dy=-2;dy<3;dy++){const X=x+dx,Y=y+dy;if(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]!=='.'){near=1;break}}
+  if(!near)continue;const sc=oscore(b,i,'o')*1.05+oscore(b,i,'x')+Math.random();if(sc>bs){bs=sc;best=i}}
+ return best>=0?best:112}
+setInterval(()=>{if(!solo||game!=='omok'||!OM)return;
+ if(OM.ph==='play'&&OM.t===1&&!aiBusy){if(!oaiAt)oaiAt=Date.now()+900+Math.random()*500;if(Date.now()>=oaiAt){aiBusy=1;oaiAt=0;omMove(oAI(),1);aiBusy=0}}else oaiAt=0},200);
+function oren(){const A=document.getElementById('app'),nm=['흑','백'];
+ if(!OM){A.innerHTML=`<div class="eyebrow">AFTER HOURS · OMOK</div><h1>오목</h1><p class="sub">방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
+ const my=!spec&&OM.ph==='play'&&OM.t===omMe,gg=OM.g||0;
+ if(og===gg&&OM.n>pvN){sfx('move')}
+ if(og===gg&&oph!=='over'&&OM.ph==='over')sfx(spec||OM.w===omMe?'win':OM.w<0?'move':'lose');
+ if(my&&otk!==gg*1000+OM.n){otk=gg*1000+OM.n;if(og===gg||OM.n>0){sfx('turn');toast('내 차례입니다!')}}
+ og=gg;oph=OM.ph;pvN=OM.n;
+ let svg='<svg viewBox="0 0 15 15"><defs><radialGradient id="gb" cx="35%" cy="30%"><stop offset="0" stop-color="#666"/><stop offset="1" stop-color="#050505"/></radialGradient><radialGradient id="gw" cx="35%" cy="30%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfcfcf"/></radialGradient></defs><g stroke="#5a3d12" stroke-width=".05">';
+ for(let i=0;i<15;i++)svg+=`<line x1=".5" y1="${i+.5}" x2="14.5" y2="${i+.5}"/><line x1="${i+.5}" y1=".5" x2="${i+.5}" y2="14.5"/>`;
+ svg+='</g>';for(const[x,y]of[[3,3],[3,11],[7,7],[11,3],[11,11]])svg+=`<circle cx="${x+.5}" cy="${y+.5}" r=".11" fill="#5a3d12"/>`;
+ for(let i=0;i<225;i++){const c=OM.b[i];if(c==='.')continue;const x=i%15+.5,y=(i/15|0)+.5;
+  svg+=`<circle cx="${x+.03}" cy="${y+.05}" r=".43" fill="rgba(0,0,0,.35)"/><circle cx="${x}" cy="${y}" r=".43" fill="url(#${c==='x'?'gb':'gw'})"/>`;
+  if(OM.wl&&OM.wl.includes(i))svg+=`<circle cx="${x}" cy="${y}" r=".5" fill="none" stroke="#f0b968" stroke-width=".09"/>`;
+  if(i===OM.lm)svg+=`<circle cx="${x}" cy="${y}" r=".12" fill="${c==='x'?'#ffd54a':'#d22'}"/>`}
+ svg+='</svg>';
+ const st=OM.ph==='over'?(OM.w<0?'무승부':spec?nm[OM.w]+' 승리!':OM.w===omMe?'🎉 승리!':'패배...'):spec?nm[OM.t]+' 차례':my?'내 차례':'상대 차례';
+ let h=`<div class="eyebrow">AFTER HOURS · OMOK</div><h1>오목</h1><div class="sm">${solo?'AI 대전':'방 '+code} · ${spec?'<b>👀 관전 중</b>':'나: <b>'+nm[omMe]+'</b> ('+(omMe?'후공':'선공')+')'}</div>`;
+ if(!spec&&(OM.ph==='over'||gone()))h+=`<div class="row">${gone()&&!solo?'<b>상대가 나갔습니다.</b>':''}<button class="bt" onclick="orematch()">다시하기</button></div>`;
+ h+=`<div class="stat"><b>${st}</b><span class="sm">${nm[OM.t]}돌 차례 · ${OM.n}수</span></div><div class="ob" id="ob">${svg}</div><div class="sm">가로·세로·대각선으로 같은 색 돌 5개 이상을 먼저 이으면 승리합니다. (기본 룰, 금수 없음)</div><div class="row"><button class="bt" onclick="location.reload()">← 처음으로</button></div>`;
+ A.innerHTML=h;
+ const bd=document.getElementById('ob');bd.onpointerup=e=>{const r=bd.getBoundingClientRect(),cl=v=>Math.min(14,Math.max(0,v));oplace(cl(Math.floor((e.clientY-r.top)/r.height*15))*15+cl(Math.floor((e.clientX-r.left)/r.width*15)))}}
+let pvN=-1;
 function bf(){const a=S.b.split('');for(const f of S.fire||[])a[f[1]*9+f[0]]='*';for(const c of S.cats||[])a[c[1]*9+c[0]]='*';return a.join('')}
 function recMoved(b,x,y){const r=[];for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const X=x+dx,Y=y+dy;if(P(X,Y)&&b[Y*9+X]!=='.'&&sd(b[Y*9+X])===me)r.push([X,Y,dx,dy])}return r}
 function recPlan(ax,ay,bx,by){const b=S.b,f=bf();let m=[];
@@ -265,7 +314,7 @@ setInterval(()=>{if(!S||S.ph!=='play'||!tS)return;const l=Math.max(0,30-Math.flo
  if(e){e.textContent='⏱ '+l+'초';e.style.color=l<=10?'#d22':'inherit'}
  if(l<=0&&S.t===me&&!spec){AR=0;done(S.b.split(''),NM[me].slice(0,1)+': 시간 초과, 한 수 쉼')}},250);
 function rematch(){S=newS(((S&&S.g)||0)+1);pk=[];fxn=0;mode=null;sel=null;tg=[];tick();ren()}
-function tick(){if(!R||spec)return;R.emit('hi',{id,side:me});if(S){R.emit('st',{id,S});specs.forEach(c=>{if(c.open)c.send({t:'st',d:{id,S}})})}}
+function tick(){if(game==='omok')return otick();if(!R||spec)return;R.emit('hi',{id,side:me});if(S){R.emit('st',{id,S});specs.forEach(c=>{if(c.open)c.send({t:'st',d:{id,S}})})}}
 let cn=null,errMsg='',spec=false,specs=[];
 const rxHi=d=>{if(!d||d.id===id||(opp&&d.id!==opp&&!gone()))return;seen=Date.now();
  const o0=opp,m0=me,s0=!!S;opp=d.id;
@@ -274,13 +323,13 @@ const rxHi=d=>{if(!d||d.id===id||(opp&&d.id!==opp&&!gone()))return;seen=Date.now
  if(o0!==opp||m0!==me||s0!==!!S)ren()};
 const rxSt=d=>{if(!d||!d.S||d.id===id||(opp&&d.id!==opp&&!gone()))return;seen=Date.now();opp=d.id;adopt(d.S)};
 function link(c){cn=c;const go=()=>{tick();ren()};if(c.open)go();else c.on('open',go);
- c.on('data',m=>{if(!m)return;if(m.t==='hi')rxHi(m.d);else if(m.t==='st')rxSt(m.d);else if(m.t==='spec'){spec=true;me=0;ren()}});c.on('close',()=>{if(cn===c){seen=0;ren()}})}
+ c.on('data',m=>{if(!m)return;if(m.t==='hi')rxHi(m.d);else if(m.t==='st')rxSt(m.d);else if(m.t==='os')orx(m.d);else if(m.t==='spec'){spec=true;me=0;ren()}});c.on('close',()=>{if(cn===c){seen=0;ren()}})}
 function fail(m){errMsg=m;R=null;ren()}
 function join(){code=(document.getElementById('rc').value||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);if(!code)return;errMsg='';
  if(typeof Peer==='undefined')return fail('PeerJS를 불러오지 못했습니다. 인터넷 연결을 확인하세요.');
- const pid='jgx'+code;R={emit:(t,d)=>{if(cn&&cn.open)cn.send({t,d})}};
- const hp=new Peer(pid);let hpOk=0;const to=setTimeout(()=>{if(!hpOk)fail('연결 서버(0.peerjs.com)에 접속하지 못했습니다. 인터넷/방화벽을 확인하세요.')},10000);hp.on('open',()=>{hpOk=1;clearTimeout(to)});hp.on('connection',c=>{c.on('open',()=>{if(!cn||!cn.open||gone())link(c);else{specs.push(c);c.send({t:'spec'});if(S)c.send({t:'st',d:{id,S}})}});c.on('close',()=>{specs=specs.filter(x=>x!==c)})});
- hp.on('error',e=>{clearTimeout(to);if(e.type==='unavailable-id'){const g=new Peer();g.on('open',()=>link(g.connect(pid,{reliable:true})));
+ const pid=(game==='omok'?'omk':'jgx')+code;R={emit:(t,d)=>{if(cn&&cn.open)cn.send({t,d})}};
+ const hp=new Peer(pid);let hpOk=0;const to=setTimeout(()=>{if(!hpOk)fail('연결 서버(0.peerjs.com)에 접속하지 못했습니다. 인터넷/방화벽을 확인하세요.')},10000);hp.on('open',()=>{hpOk=1;clearTimeout(to);if(game==='omok'){omMe=0;if(!OM)OM=newO(0);ren()}});hp.on('connection',c=>{c.on('open',()=>{if(!cn||!cn.open||gone())link(c);else{specs.push(c);c.send({t:'spec'});if(S)c.send({t:'st',d:{id,S}})}});c.on('close',()=>{specs=specs.filter(x=>x!==c)})});
+ hp.on('error',e=>{clearTimeout(to);if(e.type==='unavailable-id'){const g=new Peer();g.on('open',()=>{omMe=1;link(g.connect(pid,{reliable:true}))});
   g.on('error',x=>fail(x.type==='peer-unavailable'?'방을 찾을 수 없습니다. 상대가 먼저 입장했는지 확인하세요.':'연결 오류: '+x.type))}else fail('서버 연결 오류: '+e.type)});
  setInterval(()=>{tick();const g=!!gone();if(g!==wasGone){wasGone=g;ren()}},1500);ren()}
 function tp(k){const i=pk.indexOf(k);if(i>=0)pk.splice(i,1);else if(pk.length<Math.min(2,S.of[me].length))pk.push(k);ren()}
@@ -301,17 +350,29 @@ function anim(f){const bd=document.getElementById('bd'),lay=document.getElementB
  requestAnimationFrame(loop)}
 function ren(){if(quiet)return;
  const A=document.getElementById('app');let h='<div class="eyebrow">AFTER HOURS · AUGMENT JANGGI</div><h1>증강 장기</h1>';
- if(!R){A.innerHTML=`<div class="eyebrow">AUGMENT JANGGI · THE BOARD GAME CLUB</div>
-<h1 class="hero">증강 장기,<br><em>한 판의 승부</em>.</h1>
-<p class="sub">증강을 고르고, 판을 뒤집으세요.<br>친구와 함께, 또는 AI와 한 수 겨뤄보세요.</p>
-<div class="grid2">
-<div class="gcard"><span class="tag on">TRUST YOUR INSTINCT</span><h3>🤖 AI와 대결</h3><p class="sm">혼자서도 바로 한 판.<br>입장 없이 곧바로 시작해요.</p><button class="bt pri" onclick="solo1()">플레이하기 ↗</button></div>
+ if(!R&&!game){A.innerHTML=`<div class="eyebrow">AFTER HOURS · THE BOARD GAME CLUB</div>
+<h1 class="hero">오늘 밤,<br><em>한 판 어때요?</em></h1>
+<p class="sub">마음이 끌리는 게임을 고르세요.<br>다음 화면에서 AI와 할지, 친구와 할지 정할 수 있어요.</p>
+<div class="eyebrow">오늘의 게임 02</div>
+<div style="display:grid;gap:12px;margin-top:10px">
+<button class="gcard" onclick="pg('janggi')"><span class="tag on">STRATEGY · AUGMENT</span><h3>⚔️ 증강 장기</h3><span class="sm">증강을 골라 판을 뒤집는 장기.<br>랜덤 증강 3개 중 2개를 고르고, 5턴마다 새 증강을 뽑아요.</span><b style="color:var(--ac);margin-top:4px">플레이하기 ↗</b></button>
+<button class="gcard" onclick="pg('omok')"><span class="tag on">CLASSIC · FIVE IN A ROW</span><h3>⚫ 오목</h3><span class="sm">가로·세로·대각선으로 다섯 줄을 먼저 이으면 승리.<br>기본 룰로 가볍게 한 판.</span><b style="color:var(--ac);margin-top:4px">플레이하기 ↗</b></button>
+</div>
+<div class="foot">AFTER HOURS ✧ Made for nights worth sharing. ☾</div>`;return}
+ if(!R){const om=game==='omok',gn=om?'오목':'증강 장기';A.innerHTML=`<button class="bt" style="padding:4px 14px;font-size:12px" onclick="pg(null)">← 게임 선택</button>
+<div class="eyebrow" style="margin-top:14px">${om?'CLASSIC · FIVE IN A ROW':'STRATEGY · AUGMENT'}</div>
+<h1 class="hero">${om?'⚫':'⚔️'} ${gn}</h1>
+<p class="sub">${om?'다섯 줄을 먼저 이으면 승리! 기본 룰로 즐겨요.':'랜덤 증강으로 판을 뒤집는 장기예요.'}</p>
+<div class="eyebrow">플레이 방식을 선택하세요</div>
+<div class="grid2" style="margin-top:8px">
+<div class="gcard"><span class="tag on">TRUST YOUR INSTINCT</span><h3>🤖 AI와 대결</h3><p class="sm">혼자서도 바로 한 판.<br>입장 없이 곧바로 시작해요.</p><button class="bt pri" onclick="go1()">플레이하기 ↗</button></div>
 <div class="gcard"><span class="tag on">PLAY WITH FRIENDS</span><h3>🎲 친구와 대결</h3><p class="sm">같은 방 코드로 모이면 바로 대국. 이미 두 명이 있는 방은 관전자로 입장해요.</p><div class="row"><input id="rc" placeholder="방 코드 (예: abc123)" value="${code}"><button class="bt pri" onclick="join()">입장 ↗</button></div>${errMsg?'<div class="err">'+errMsg+'</div>':''}</div>
 </div>
 <div class="eyebrow" style="margin-top:26px">A SEAT FOR EVERYONE</div>
 <h2 class="h2">모이는 방법은, 간단해요.</h2>
-<ol class="steps"><li><b>01</b><div><strong>방 코드를 정하고</strong><span class="sm">한 명이 먼저 입장해 방을 만들어요.</span></div></li><li><b>02</b><div><strong>코드를 나누면</strong><span class="sm">친구가 같은 코드로 입장해요.</span></div></li><li><b>03</b><div><strong>증강을 고르고 대국</strong><span class="sm">마·상 배치와 증강 2개를 고르면 시작!</span></div></li></ol>
+<ol class="steps"><li><b>01</b><div><strong>방 코드를 정해요</strong><span class="sm">한 명이 먼저 입장해 방을 만들어요.</span></div></li><li><b>02</b><div><strong>코드를 나누면</strong><span class="sm">친구가 같은 게임, 같은 코드로 입장해요.</span></div></li><li><b>03</b><div><strong>${om?'방장이 흑으로 먼저 시작':'증강을 고르고 대국'}</strong><span class="sm">${om?'다섯 줄을 먼저 이으면 승리!':'마·상 배치와 증강 2개를 고르면 시작!'}</span></div></li></ol>
 <div class="foot">AFTER HOURS ✧ Made for nights worth sharing. ☾</div>`;return}
+ if(game==='omok')return oren();
  if(me<0||!S){A.innerHTML=h+`<p>방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
  {const cur=S.u.map(a=>a.slice()),g=S.g||0;
   if(usn&&usn.g===g)for(const s of[0,1]){const cn={},pv={};cur[s].forEach(k=>cn[k]=(cn[k]||0)+1);usn.u[s].forEach(k=>pv[k]=(pv[k]||0)+1);
@@ -354,7 +415,7 @@ function ren(){if(quiet)return;
  const fm=s=>S.ch[s].map(k=>N[k]+(used(s,k)?'(사용)':'')).join(', ');
  if(!spec)h+='<div class="row">'+S.ch[me].map(k=>`<button class="bt ${mode===k?'on':''}" ${cu(k)?'':'disabled'} onclick="am(${k})">${N[k]}${used(me,k)?' ✓사용':ACT[k]?(mode===k&&INS.includes(k)?' (한 번 더 눌러 발동)':''):' (패시브)'}</button>`).join('')+`<button class="bt" ${my?'':'disabled'} onclick="pass()">한 수 쉼</button></div>`;
  const mm=M();if(!spec&&mm!==null)h+=`<div class="sm"><b>${S.y?'야차룰':N[mm]}</b>: ${mm===3?'내 기물을 뒤로 당겼다 놓으세요 (많이 당길수록 강하게, 반대 방향으로 날아갑니다)':DS[mm]}</div>`;
- h+=(spec?`<div class="sm">초: ${fm(0)}</div><div class="sm">한: ${fm(1)}</div>`:`<div class="sm">상대 증강: ${fm(1-me)}</div>`)+`<div class="sm">왕을 잡으면 승리합니다. 장군/멍군 규칙은 없습니다. ${RP/2}턴마다 증강 재선택.</div>`;
+ h+=(spec?`<div class="sm">초: ${fm(0)}</div><div class="sm">한: ${fm(1)}</div>`:`<div class="sm">상대 증강: ${fm(1-me)}</div>`)+`<div class="sm">왕을 잡으면 승리합니다. 장군/멍군 규칙은 없습니다. ${RP/2}턴마다 증강 재선택.</div>`+'<div class="row"><button class="bt" onclick="location.reload()">← 처음으로</button></div>';
  A.innerHTML=h;
  const bd=document.getElementById('bd'),dl=document.getElementById('dl'),dl2=document.getElementById('dl2');
  const uv=e=>{const r=bd.getBoundingClientRect();return[(e.clientX-r.left)/r.width*9,(e.clientY-r.top)/r.height*10]};
