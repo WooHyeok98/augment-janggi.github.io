@@ -21,6 +21,7 @@ h1{font-size:20px;margin:4px 0 8px}
 .b{color:#1a5fb4;border-color:#1a5fb4}.r{color:#c01c28;border-color:#c01c28}
 .fz{filter:grayscale(1);opacity:.55}.ar{box-shadow:0 0 0 3px gold}
 .mk{position:absolute;transform:translate(-50%,-50%);width:4.5%;aspect-ratio:1;border-radius:50%;background:rgba(30,150,60,.85);pointer-events:none}
+.pc{z-index:1}.mk{z-index:2}.mk.lm{width:11%;border-radius:8px;background:rgba(255,196,0,.6);z-index:0}.mk.lf{background:rgba(255,196,0,.28)}
 .mk.x{width:10.5%;background:rgba(220,30,30,.4)}.mk.s{width:11%;background:none;border:3px solid #1c9c3c}
 .bt,.cd{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font:inherit;cursor:pointer}
 .bt.on,.cd.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}.bt:disabled{opacity:.45;cursor:default}
@@ -42,7 +43,7 @@ const dstep=(x,y,dx,dy)=>dg(x,y)&&dg(x+dx,y+dy)&&pal(x,y)===pal(x+dx,y+dy);
 const sd=c=>c===c.toUpperCase()?0:1;
 const sh=own=>[...Array(23).keys()].filter(k=>!own.includes(k)&&k!==9&&k!==3).sort(()=>Math.random()-.5).slice(0,3);
 const newS=g=>({b:INIT,t:0,q:0,g,n:0,y:0,ph:'set',sa:[-1,-1],i0:INIT,cats:[],fire:[],fz:null,of:[sh([]),sh([])],ch:[[],[]],pk:[[],[]],u:[[],[]],lg:''});
-let lastKey='',tS=0,seen=0,wasGone=false,S=null,me=-1,id=Math.random().toString(36).slice(2,8),opp=null,R=null,ROOM=null,mode=null,sel=null,tg=[],pk=[],fxn=0,drag=null,AR=0,code='';
+let pv=null,AC=null,bgmOn=true,sfxOn=true,bgmT=0,bgmStep=0,LM=[],usn=null,aiAt=0,solo=false,quiet=false,aiBusy=0,lastKey='',tS=0,seen=0,wasGone=false,S=null,me=-1,id=Math.random().toString(36).slice(2,8),opp=null,R=null,ROOM=null,mode=null,sel=null,tg=[],pk=[],fxn=0,drag=null,AR=0,code='';
 const has=(s,k)=>S.ch[s].includes(k),used=(s,k)=>S.u[s].filter(v=>v===k).length>=(LIM[k]||1),av=(s,k)=>has(s,k)&&!used(s,k);
 const M=()=>S&&S.y?3:mode,cv=q=>sd(q)?q.toUpperCase():q.toLowerCase();
 const GL=c=>{const s=sd(c);return{R:'車',H:'馬',E:'象',G:'士',K:s?'漢':'楚',C:'包',P:s?'兵':'卒'}[c.toUpperCase()]};
@@ -85,10 +86,10 @@ function calc(x,y){const b=S.b,t=b[y*9+x].toUpperCase();
 function kill(b,x,y,ax,ay){const j=y*9+x,q=b[j];if(q==='.')return 0;const o=sd(q);
  if(q.toUpperCase()==='K'&&av(o,1)){S.u[o].push(1);AR=1;if(ax>=0)b[ay*9+ax]='.';return 1}
  b[j]='.';return 0}
-function done(b,lg,fx){if(S.fz&&S.fz[2]===me)S.fz=null;S.b=b.join('');S.q++;S.lg=lg+(AR?' (가시갑옷 발동!)':'');if(fx)S.fx=fx;
- const kb=S.b.includes('K'),kr=S.b.includes('k');if(!kb||!kr){S.ph='over';S.w=kb?0:1}else{S.t=1-S.t;S.n=(S.n||0)+1;S.fire=(S.fire||[]).filter(f=>S.n<f[2]);moveCats();if(S.n%RP===0&&!S.y){S.of=[sh(S.ch[0]),sh(S.ch[1])];S.pk=[[],[]];S.ph='pick';chk()}}
+function done(b,lg,fx){if(S.fz&&S.fz[2]===me)S.fz=null;S.b=b.join('');S.lm=LM;LM=[];S.q++;S.lg=lg+(AR?' (가시갑옷 발동!)':'');if(fx)S.fx=fx;
+ const kb=S.b.includes('K'),kr=S.b.includes('k');if(!kb||!kr){S.ph='over';S.w=kb?0:1}else{S.t=1-S.t;S.n=(S.n||0)+1;S.fire=(S.fire||[]).filter(f=>S.n<f[2]);moveCats();if(S.n%RP===0&&!S.y){S.ph='rw';setTimeout(startRepick,2200)}}
  sel=null;mode=null;tg=[];tick();ren()}
-function exec(a,c,x,y){AR=0;const b=S.b.split(''),pc=b[c*9+a],i=c*9+a,j=y*9+x,n=NM[me].slice(0,1)+': ';
+function exec(a,c,x,y){AR=0;LM=[[a,c],[x,y]];const b=S.b.split(''),pc=b[c*9+a],i=c*9+a,j=y*9+x,n=NM[me].slice(0,1)+': ';
  if(mode===14){const m=recPlan(a,c,x,y);m.forEach(([X,Y])=>{b[Y*9+X]='.'});m.forEach(([X,Y,tx,ty])=>{b[ty*9+tx]=S.b[Y*9+X]});S.u[me].push(14);return done(b,n+'리콜!')}
  if(mode===0){b[j]=pc;b[i]='.';S.u[me].push(0);return done(b,n+'텔레포트')}
  if(mode===4){const dx=Math.sign(x-a),dy=Math.sign(y-c);let X=a,Y=c,hit=0;
@@ -132,6 +133,60 @@ function revive(b){const cnt={};
  for(const ch of b)if(ch!=='.'&&sd(ch)===me&&cnt[ch])cnt[ch]--;
  for(let i=0;i<90;i++){const ch=(S.i0||INIT)[i];if(ch==='.'||sd(ch)!==me||!(cnt[ch]>0))continue;const q=b[i];if(q!=='.'&&sd(q)===me)continue;b[i]=ch;cnt[ch]--}
  for(const ch in cnt)while(cnt[ch]>0){const o=[...Array(90).keys()];if(!me)o.reverse();const i=o.find(i=>b[i]==='.');if(i===undefined)break;b[i]=ch;cnt[ch]--}}
+const VAL={K:1000,R:13,C:7,H:5,E:3,G:3,P:2};
+function solo1(){solo=true;R={emit(){}};me=0;opp='ai';seen=Date.now();S=newS(0);code='';ren()}
+function aiMove(){if(!solo||!S||S.ph!=='play'||S.t!==1)return;const m0=me;me=1;quiet=true;
+ try{aiAct()}catch(e){if(S.t===1&&S.ph==='play'){try{done(S.b.split(''),'AI: 한 수 쉼')}catch(_){}}}
+ me=m0;quiet=false;mode=null;sel=null;tg=[];ren()}
+function aiAct(){const b=S.b,f=bf();mode=null;
+ const A=S.ch[1].filter(k=>!used(1,k)&&ACT[k]);
+ if(Math.random()<.3){const o=A.filter(k=>[7,13,15,17,18,20,22].includes(k)),k=o[Math.random()*o.length|0];
+  if(k!==undefined){
+   if(k===7&&[...b].filter(c=>c!=='.'&&sd(c)===1).length<=12){inst(7);return}
+   if(k===20||k===22){inst(k);return}
+   if(k===18){mode=18;click(1+Math.random()*7|0,3+Math.random()*4|0);if(!used(1,18))mode=null;else return}
+   if(k===13||k===15||k===17){let bx=-1,bv=0;for(let i=0;i<90;i++){const q=b[i];if(q!=='.'&&sd(q)===0&&q.toUpperCase()!=='K'&&!(k===15&&q.toUpperCase()==='G')&&VAL[q.toUpperCase()]>bv){bv=VAL[q.toUpperCase()];bx=i}}
+    if(bx>=0){mode=k;click(bx%9,bx/9|0);return}}}}
+ let best=null,bs=-1e9;
+ for(let i=0;i<90;i++){const pc=b[i];if(pc==='.'||sd(pc)!==1||frozen(i%9,i/9|0))continue;
+  for(const[tx,ty]of mv(f,i%9,i/9|0)){const q=b[ty*9+tx];let sc=(q!=='.'?VAL[q.toUpperCase()]*10:0)+Math.random()*.6+ty*.05;
+   const nb=b.split('');nb[ty*9+tx]=pc;nb[i]='.';const ns=nb.join('');let risk=0;
+   for(let j=0;j<90;j++){const e=ns[j];if(e==='.'||sd(e)!==0)continue;for(const[ex,ey]of mv(ns,j%9,j/9|0)){const c=ns[ey*9+ex];if(c!=='.'&&sd(c)===1)risk=Math.max(risk,VAL[c.toUpperCase()]*10)}}
+   sc-=risk*.8;if(sc>bs){bs=sc;best=[i,tx,ty,q]}}}
+ if(!best){done(b.split(''),'AI: 한 수 쉼');return}
+ const[i,tx,ty,q]=best;if(q!=='.'&&av(1,6)&&Math.random()<.7)mode=6;
+ exec(i%9,i/9|0,tx,ty)}
+setInterval(()=>{if(!solo||!S)return;let ch=0;
+ if(S.ph==='set'&&S.sa[1]<0){S.sa[1]=Math.random()*4|0;chkSet();ch=1}
+ else if(S.ph==='pick'&&S.pk[1].length<Math.min(2,S.of[1].length)){S.pk[1]=S.of[1].slice(0,Math.min(2,S.of[1].length));chk();ch=1}
+ if(ch)ren();
+ if(S.ph==='play'&&S.t===1&&!aiBusy){if(!aiAt)aiAt=Date.now()+1000+Math.random()*500;if(Date.now()>=aiAt){aiBusy=1;aiAt=0;aiMove();aiBusy=0}}else aiAt=0},200);
+function startRepick(){if(!S||S.ph!=='rw')return;S.of=[sh(S.ch[0]),sh(S.ch[1])];S.pk=[[],[]];S.ph='pick';S.q++;chk();tick();ren()}
+function bigToast(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);background:rgba(20,20,20,.9);color:#ffd54a;padding:16px 28px;border-radius:16px;font-weight:800;font-size:26px;z-index:100;pointer-events:none;transition:opacity .4s;text-align:center;max-width:90vw';document.body.appendChild(d);setTimeout(()=>{d.style.opacity=0},600);setTimeout(()=>d.remove(),1000);sfx('aug')}
+try{bgmOn=localStorage.getItem('jg_bgm')!=='0';sfxOn=localStorage.getItem('jg_sfx')!=='0'}catch(e){}
+const sv=(k,v)=>{try{localStorage.setItem(k,v?'1':'0')}catch(e){}};
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}if(AC.state==='suspended')AC.resume();return AC}
+function tone(f,t0,d,type,v,f2){const a=ac();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+ g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(a.destination);o.start(t0);o.stop(t0+d+.03)}
+function noise(t0,d,v){const a=ac();if(!a)return;const n=Math.max(1,a.sampleRate*d|0),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=Math.random()*2-1;
+ const s=a.createBufferSource(),g=a.createGain();s.buffer=b;g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);s.connect(g);g.connect(a.destination);s.start(t0)}
+function sfx(k){if(!sfxOn)return;const a=ac();if(!a||a.state!=='running')return;const t=a.currentTime;
+ if(k==='move'){tone(240,t,.09,'triangle',.25,110);noise(t,.04,.12)}
+ else if(k==='cap'){tone(150,t,.2,'sawtooth',.25,50);noise(t,.16,.3);tone(300,t+.05,.1,'square',.08,120)}
+ else if(k==='aug')[523,659,784,1047].forEach((f,i)=>tone(f,t+i*.06,.22,'sine',.2));
+ else if(k==='turn'){tone(880,t,.1,'sine',.14);tone(1175,t+.09,.14,'sine',.12)}
+ else if(k==='win')[523,659,784,1047,1319].forEach((f,i)=>tone(f,t+i*.12,.35,'triangle',.25));
+ else if(k==='lose')[392,330,262,196].forEach((f,i)=>tone(f,t+i*.2,.4,'sawtooth',.16));
+ else if(k==='sel')tone(660,t,.05,'square',.06)}
+const SC=[293.66,329.63,392,440,523.25,587.33],PA=[0,2,3,2,4,3,2,0,1,2,3,5,4,3,2,1],PB=[3,2,0,2,3,4,5,4,3,2,1,0,2,3,2,0];
+function bgmTick(){if(!bgmOn||!AC||AC.state!=='running')return;const t=AC.currentTime;if(bgmT<t)bgmT=t+.05;
+ while(bgmT<t+.4){const st=bgmStep++,pt=(st>>4)%2?PB:PA,i=st%16;tone(SC[pt[i]],bgmT,.45,'triangle',.05);
+  if(i%4===0)tone(SC[i%8===0?0:3]/2,bgmT,1.1,'sine',.06);if(i%8===4)tone(SC[pt[i]]*2,bgmT+.15,.3,'sine',.025);bgmT+=.32}}
+function initSnd(){const d=document.createElement('div');d.style.cssText='position:fixed;top:calc(6px + env(safe-area-inset-top,0px));right:6px;z-index:90;display:flex;gap:4px';
+ const mk=(ic,get,set)=>{const b=document.createElement('button');b.className='bt';b.style.padding='4px 8px';const up=()=>{b.textContent=ic+(get()?'':'✕');b.style.opacity=get()?1:.5};up();
+  b.onclick=()=>{set(!get());up();ac();if(get()&&ic==='🔊')sfx('sel')};d.appendChild(b)};
+ mk('🎵',()=>bgmOn,v=>{bgmOn=v;sv('jg_bgm',v)});mk('🔊',()=>sfxOn,v=>{sfxOn=v;sv('jg_sfx',v)});
+ document.body.appendChild(d);document.addEventListener('pointerdown',()=>ac());setInterval(bgmTick,100)}
 function bf(){const a=S.b.split('');for(const f of S.fire||[])a[f[1]*9+f[0]]='*';for(const c of S.cats||[])a[c[1]*9+c[0]]='*';return a.join('')}
 function recMoved(b,x,y){const r=[];for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const X=x+dx,Y=y+dy;if(P(X,Y)&&b[Y*9+X]!=='.'&&sd(b[Y*9+X])===me)r.push([X,Y,dx,dy])}return r}
 function recPlan(ax,ay,bx,by){const b=S.b,f=bf();let m=[];
@@ -139,7 +194,7 @@ function recPlan(ax,ay,bx,by){const b=S.b,f=bf();let m=[];
  let ch=1;while(ch){ch=0;const cur=m;m=cur.filter(([X,Y,tx,ty])=>{const ok=P(tx,ty)&&f[ty*9+tx]!=='*'&&(b[ty*9+tx]==='.'||cur.some(k=>k[0]===tx&&k[1]===ty));if(!ok)ch=1;return ok})}
  return m}
 function recT(x,y){const r=[];for(let i=0;i<90;i++){const q=S.b[i];if(q!=='.'&&sd(q)===me&&i!==y*9+x&&recPlan(x,y,i%9,i/9|0).length)r.push([i%9,i/9|0])}return r}
-function eact(k,x,y){AR=0;const b=S.b.split(''),q=b[y*9+x];
+function eact(k,x,y){AR=0;LM=[[x,y]];const b=S.b.split(''),q=b[y*9+x];
  if(k===13)b[y*9+x]=cv(q);else if(k===15)b[y*9+x]=sd(q)?'g':'G';else S.fz=[x,y,1-me];
  S.u[me].push(k);done(b,NM[me].slice(0,1)+': '+N[k]+'!')}
 function moveCats(){for(const c of S.cats||[]){const f=bf(),ds=O.filter(([dx,dy])=>{const X=c[0]+dx,Y=c[1]+dy;return P(X,Y)&&f[Y*9+X]==='.'});if(ds.length){const d=ds[Math.random()*ds.length|0];c[0]+=d[0];c[1]+=d[1]}}}
@@ -158,27 +213,27 @@ function mind(x,y){AR=0;const b=S.b.split('');b[y*9+x]=cv(b[y*9+x]);S.u[me].push
 function click(x,y){
  if(spec||!S||S.ph!=='play'||S.t!==me||S.y||M()===3||INS.includes(mode))return;
  if(mode===13||mode===15||mode===17){const z=S.b[y*9+x];if(z!=='.'&&sd(z)!==me&&z.toUpperCase()!=='K'&&!(mode===15&&z.toUpperCase()==='G'))eact(mode,x,y);return}
- if(mode===18){if(bf()[y*9+x]==='.'){S.fire=[...(S.fire||[]),[x,y,S.n+7]];S.u[me].push(18);done(S.b.split(''),NM[me].slice(0,1)+': 아마테라스!')}return}
+ if(mode===18){if(bf()[y*9+x]==='.'){LM=[[x,y]];S.fire=[...(S.fire||[]),[x,y,S.n+7]];S.u[me].push(18);done(S.b.split(''),NM[me].slice(0,1)+': 아마테라스!')}return}
  if(mode===21){const cs=S.cats||[];
   if(cs.some(k=>k[0]===x&&k[1]===y)){sel=[x,y];tg=[];const f=bf();for(const[dx,dy]of O)for(const m of[1,2]){const X=x+dx*m,Y=y+dy*m;if(P(X,Y)&&(f[Y*9+X]==='.'||(f[Y*9+X]!=='*'&&sd(S.b[Y*9+X])!==me)))tg.push([X,Y])}}
-  else if(sel&&tg.some(t=>t[0]===x&&t[1]===y)){AR=0;const cat=cs.find(k=>k[0]===sel[0]&&k[1]===sel[1]),b=S.b.split(''),q=b[y*9+x];let dead=0;if(q!=='.')dead=kill(b,x,y,-1,-1);
+  else if(sel&&tg.some(t=>t[0]===x&&t[1]===y)){AR=0;LM=[[sel[0],sel[1]],[x,y]];const cat=cs.find(k=>k[0]===sel[0]&&k[1]===sel[1]),b=S.b.split(''),q=b[y*9+x];let dead=0;if(q!=='.')dead=kill(b,x,y,-1,-1);
    if(dead)S.cats=cs.filter(k=>k!==cat);else{cat[0]=x;cat[1]=y}S.u[me].push(21);return done(b,NM[me].slice(0,1)+': 캣맘'+(q!=='.'&&!dead?'으로 기물 포획!':'!'))}
   else{sel=null;tg=[]}
   return ren()}
  const c=S.b[y*9+x];
  if(sel&&tg.some(t=>t[0]===x&&t[1]===y))return exec(sel[0],sel[1],x,y);
- if(c!=='.'&&sd(c)===me&&!frozen(x,y)){sel=[x,y];tg=calc(x,y)}else{sel=null;tg=[]}
+ if(c!=='.'&&sd(c)===me&&!frozen(x,y)){sel=[x,y];tg=calc(x,y);sfx('sel')}else{sel=null;tg=[]}
  ren()}
 function chk(){if(S.ph==='pick'&&S.pk[0].length>=Math.min(2,S.of[0].length)&&S.pk[1].length>=Math.min(2,S.of[1].length)){
  for(const k of[0,1])S.ch[k]=[...S.ch[k],...S.pk[k]];S.pk=[[],[]];S.ph='play';S.q++;pk=[]}}
 function adopt(r){const rg=r.g||0,sg=S?S.g||0:0;
  if(spec){if(JSON.stringify(r)!==JSON.stringify(S)){S=r;ren()}return}
- if(!S||rg>sg||(rg===sg&&r.q>S.q)){if(S&&rg>sg)fxn=0;pk=[];S=r;sel=null;mode=null;tg=[]}
+ if(!S||rg>sg||(rg===sg&&r.q>S.q)){if(S&&rg>sg)fxn=0;pk=[];S=r;sel=null;mode=null;tg=[];if(S.ph==='rw')setTimeout(startRepick,3200)}
  else if(rg===sg&&r.q===S.q&&r.ph===S.ph&&(S.ph==='pick'||S.ph==='set')&&me>=0){const o=1-me,b4=JSON.stringify([S.pk,S.sa]);
   if(S.ph==='set'){if(r.sa[o]>=0)S.sa[o]=r.sa[o];chkSet()}else{if(r.pk[o].length)S.pk[o]=r.pk[o];chk()}
   if((S.ph==='pick'||S.ph==='set')&&JSON.stringify([S.pk,S.sa])===b4)return}
  else return;ren()}
-const gone=()=>opp&&Date.now()-seen>6000;
+const gone=()=>!solo&&opp&&Date.now()-seen>6000;
 function toast(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 22px;border-radius:24px;font-weight:700;font-size:18px;z-index:99;opacity:.95;pointer-events:none';document.body.appendChild(d);setTimeout(()=>d.remove(),1600)}
 setInterval(()=>{if(!S||S.ph!=='play'||!tS)return;const l=Math.max(0,30-Math.floor((Date.now()-tS)/1000)),e=document.getElementById('tm');
  if(e){e.textContent='⏱ '+l+'초';e.style.color=l<=10?'#d22':'inherit'}
@@ -218,11 +273,19 @@ function anim(f){const bd=document.getElementById('bd'),lay=document.getElementB
   st.p.forEach((q,i)=>{const g=gh[i];if(q.al){g.style.left=L(q);g.style.top=T(q)}else g.style.opacity=0});
   if(go)requestAnimationFrame(loop);else setTimeout(()=>{gh.forEach(g=>g.remove());lay.style.visibility='visible'},300)};
  requestAnimationFrame(loop)}
-function ren(){
+function ren(){if(quiet)return;
  const A=document.getElementById('app');let h='<h1>⚔️ 증강 장기</h1>';
- if(!R){A.innerHTML=h+`<p>같은 방 코드를 입력한 두 사람이 대결합니다. 먼저 입장한 사람이 방을 만들고, 이미 두 명이 있는 방에 들어가면 관전자가 됩니다.</p><div class="row"><input id="rc" placeholder="방 코드 (예: abc123)" value="${code}"><button class="bt" onclick="join()">입장</button></div>${errMsg?'<p style="color:#d22">'+errMsg+'</p>':''}`;return}
+ if(!R){A.innerHTML=h+`<p>같은 방 코드를 입력한 두 사람이 대결합니다. 먼저 입장한 사람이 방을 만들고, 이미 두 명이 있는 방에 들어가면 관전자가 됩니다.</p><div class="row"><input id="rc" placeholder="방 코드 (예: abc123)" value="${code}"><button class="bt" onclick="join()">입장</button></div><div class="row"><button class="bt" onclick="solo1()">🤖 AI와 대결 (솔로)</button></div>${errMsg?'<p style="color:#d22">'+errMsg+'</p>':''}`;return}
  if(me<0||!S){A.innerHTML=h+`<p>방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
- h+=`<div class="sm">방 ${code} · ${spec?'<b>👀 관전 중</b>':'나: <b>'+NM[me]+'</b>'}</div>`;
+ {const cur=S.u.map(a=>a.slice()),g=S.g||0;
+  if(usn&&usn.g===g)for(const s of[0,1]){const cn={},pv={};cur[s].forEach(k=>cn[k]=(cn[k]||0)+1);usn.u[s].forEach(k=>pv[k]=(pv[k]||0)+1);
+   for(const k in cn)if(cn[k]>(pv[k]||0))bigToast((spec?NM[s].slice(0,1):s===me?'나':'상대')+' · '+N[k]+' 사용!')}
+  usn={g,u:cur}}
+ {const pc=[...S.b].filter(c=>c!=='.').length,g=S.g||0;
+  if(pv&&pv.g===g&&pv.ph!=='set'&&S.ph!=='set'&&pv.b!==S.b)sfx(pc<pv.n?'cap':'move');
+  if(pv&&pv.g===g&&pv.ph!=='over'&&S.ph==='over')sfx(spec||S.w===me?'win':'lose');
+  pv={g,b:S.b,n:pc,ph:S.ph}}
+ h+=`<div class="sm">${solo?'AI 대전':'방 '+code} · ${spec?'<b>👀 관전 중</b>':'나: <b>'+NM[me]+'</b>'}</div>`;
  if(!spec&&(S.ph==='over'||gone()))h+=`<div class="row">${gone()?'<b>상대가 나갔습니다.</b>':''}<button class="bt" onclick="rematch()">다시하기</button></div>`;
  if(S.ph==='set'){
   if(spec){A.innerHTML=h+'<p>플레이어가 마·상 배치를 고르는 중...</p>';return}
@@ -236,8 +299,8 @@ function ren(){
   h+=dn?'<p>상대의 선택을 기다리는 중...</p>':`<button class="bt" ${pk.length===nd?'':'disabled'} onclick="ok2()">선택 확정</button>`;
   A.innerHTML=h;return}
  const my=!spec&&S.t===me&&S.ph==='play';
- const key=(S.g||0)+':'+S.q+':'+S.t;if(S.ph==='play'&&key!==lastKey){lastKey=key;tS=Date.now();toast(spec?NM[S.t]+' 차례':my?'내 차례입니다!':'상대 차례입니다')}
- h+=`<div><b>${spec?(S.ph==='over'?NM[S.w]+' 승리!':NM[S.t]+' 차례'):S.ph==='over'?(S.w===me?'🎉 승리!':'패배...'):my?'내 차례':'상대 차례 ('+NM[S.t]+')'}</b> <span class="sm">${S.lg||''}</span> <b id="tm"></b></div>`;
+ const key=(S.g||0)+':'+S.q+':'+S.t;if(S.ph==='play'&&key!==lastKey){lastKey=key;tS=Date.now();if(my)sfx('turn');toast(spec?NM[S.t]+' 차례':my?'내 차례입니다!':'상대 차례입니다')}
+ h+=`<div><b>${spec?(S.ph==='over'?NM[S.w]+' 승리!':NM[S.t]+' 차례'):S.ph==='over'?(S.w===me?'🎉 승리!':'패배...'):my?'내 차례':'상대 차례 ('+NM[S.t]+')'}</b> <span class="sm">${S.lg||''}</span> <b id="tm"></b></div>`+(S.ph==='rw'?'<div><b>✨ 잠시 후 증강을 다시 고릅니다...</b></div>':'');
  let sv='<svg viewBox="0 0 9 10" stroke="#5a3d12" stroke-width=".04">';
  for(let i=0;i<10;i++)sv+=`<line x1=".5" y1="${i+.5}" x2="8.5" y2="${i+.5}"/>`;
  for(let i=0;i<9;i++)sv+=`<line x1="${i+.5}" y1=".5" x2="${i+.5}" y2="9.5"/>`;
@@ -245,6 +308,7 @@ function ren(){
  let pcs='';const L=(x,y)=>`left:${((me?8-x:x)+.5)/9*100}%;top:${((me?9-y:y)+.5)/10*100}%`;
  for(let i=0;i<90;i++){const c=S.b[i];if(c==='.')continue;const x=i%9,y=i/9|0,s=sd(c),t=c.toUpperCase(),w=t==='K'?11.4:'GP'.includes(t)?8.6:9.8;
   pcs+=`<div class="pc ${s?'r':'b'} ${frozen(x,y)?'fz':''} ${t==='K'&&av(s,1)?'ar':''}" style="${L(x,y)};width:${w}%">${GL(c)}</div>`}
+ (S.lm||[]).forEach((c,i,a)=>{pcs+=`<div class="mk lm ${a.length>1&&i===0?'lf':''}" style="${L(c[0],c[1])}"></div>`});
  for(const f of S.fire||[])pcs+=`<div class="pc" style="${L(f[0],f[1])};width:9%;border:0;background:none;font-size:min(7vw,34px)">🔥</div>`;
  for(const c of S.cats||[])pcs+=`<div class="pc" style="${L(c[0],c[1])};width:9.8%;border-color:#777;background:#eee;color:#000;font-size:min(6vw,30px)">🐱</div>`;
  if(sel)pcs+=`<div class="mk s" style="${L(sel[0],sel[1])}"></div>`;
@@ -264,5 +328,5 @@ function ren(){
   if(M()===3&&my){const q=S.b[a[1]*9+a[0]],w=bd.clientWidth/9,k=me?-1:1;if(q!=='.'&&sd(q)===me){const vx=(e.clientX-d0.x)/w*k,vy=(e.clientY-d0.y)/w*k;if(Math.hypot(vx,vy)>=.4)flick(a[0],a[1],vx,vy)}return}
   if(a[0]===z[0]&&a[1]===z[1])click(z[0],z[1])};
  if(S.fx&&S.fx.pre&&S.fx.n!==fxn){fxn=S.fx.n;anim(S.fx)}}
-ren();
+initSnd();ren();
 </script></body></html>
