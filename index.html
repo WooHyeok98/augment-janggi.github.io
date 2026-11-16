@@ -58,6 +58,11 @@ input{font:inherit;padding:9px 14px;border:1px solid var(--bd);border-radius:999
 input:focus{outline:none;border-color:var(--ac)}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .err{color:#ff8a8a;font-size:13px}
+.cd.plat{position:relative;overflow:hidden;border:1px solid #d7efff;background:linear-gradient(115deg,#18242c 0%,#2f4656 35%,#9fd6f5 50%,#2f4656 65%,#18242c 100%);background-size:250% 100%;animation:pshine 2.6s linear infinite;box-shadow:0 0 22px rgba(160,215,250,.5),0 0 0 1px rgba(220,242,255,.75)}
+.cd.plat b{color:#f2faff;text-shadow:0 0 10px rgba(170,225,255,.9)}.cd.plat .sm{color:#c9dbe6}.cd.plat .tag{color:#e6f6ff;border-color:#cfe9ff}
+.cd.plat::after{content:"✦  ✧  ✦";position:absolute;right:12px;top:10px;color:#fff;letter-spacing:7px;text-shadow:0 0 8px #bfe8ff;animation:ptw 1.3s ease-in-out infinite}
+.bt.plat{border-color:#d7efff;animation:pglow 1.6s ease-in-out infinite alternate}
+@keyframes pshine{to{background-position:-250% 0}}@keyframes ptw{50%{opacity:.25;transform:scale(1.2)}}@keyframes pglow{from{box-shadow:0 0 6px rgba(160,215,250,.3)}to{box-shadow:0 0 18px rgba(190,235,255,.85)}}
 </style></head><body><div id="app"></div>
 <script>
 window.addEventListener('error',e=>{const d=document.createElement('div');d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c00;color:#fff;padding:6px;font-size:12px;z-index:99';d.textContent='오류: '+e.message;document.body.appendChild(d)});
@@ -217,51 +222,181 @@ function initSnd(){const d=document.createElement('div');d.style.cssText='positi
   b.onclick=()=>{set(!get());up();ac();if(get()&&ic==='🔊')sfx('sel')};d.appendChild(b)};
  mk('🎵',()=>bgmOn,v=>{bgmOn=v;sv('jg_bgm',v)});mk('🔊',()=>sfxOn,v=>{sfxOn=v;sv('jg_sfx',v)});
  document.body.appendChild(d);document.addEventListener('pointerdown',()=>ac());setInterval(bgmTick,100)}
-const newO=g=>({b:'.'.repeat(225),t:0,n:0,g,ph:'play',w:-1,lm:-1,wl:[]});
+const NM2=['흑','백'],OCH=['x','o'],nb4=[[1,0],[-1,0],[0,1],[0,-1]];
+const AN=['킬각이다!','폭발은 예술','에~코!','이거 6목이야','배신','선점','지진','체인지','바위 소환','분신술','도약','바둑'];
+const AD=['이번 턴에 돌을 2개 연속으로 놓음. 대신 내 다음 턴을 1번 건너뜀 (1회)','폭탄 돌을 놓음. 3턴 후 폭발해 주변 3x3의 모든 돌을 지움. 10턴마다 폭탄 1개 추가 (폭탄이 있을 때 사용)','게임을 2턴 전 상태로 되돌림 (1회)','상대의 승리 조건을 6목으로 만듦 (1회)','상대 돌 하나를 지정하면 5턴 뒤 내 돌로 바뀜. 상대는 어느 돌인지 모름 (1회)','게임 시작 시 내 돌 2개를 무작위 위치에 소환 (패시브)','판을 흔들어 상·하·좌·우로 무작위 순서로 모든 돌을 미끄러뜨림. 바위는 고정 (1회)','내 돌과 상대 돌의 위치를 맞바꿈. 5목이 완성되는 위치로는 불가. 턴을 소모하고 바로 상대 턴으로 넘어감 (1회)','원하는 빈 칸 2곳에 바위를 소환. 돌을 놓을 수 없음 (1회)','이번 턴에 진짜 돌과 가짜 돌을 놓음. 상대가 가짜 돌 인접 칸에 두거나 3턴이 지나면 가짜 돌 소멸. 상대는 구분 불가 (1회)','내 돌 하나를 가로·세로·대각선 2칸 이내로 이동 (1회)','상대 돌(몇 개든 이어진 덩어리)의 상하좌우를 내 돌로 둘러싸 빈 칸이 없으면 모두 잡음. 판 가장자리와 바위도 벽으로 인정 (패시브, 2회)'];
+const OP=[0,0,0,0,0,1,0,0,0,0,0,1];
+let ous=0,plm=-2,pex=0,omode=null,osl=[];
+const pick3=(own,no5)=>{const o=[...Array(12).keys()].filter(k=>k!==0&&!own.includes(k)&&!(no5&&k===5)).sort(()=>Math.random()-.5).slice(0,3);if(!own.includes(0)&&Math.random()<.02){if(o.length<3)o.push(0);else o[Math.random()*3|0]=0}return o},r3=()=>pick3([],0);
+const newO=g=>({g,n:0,ph:'pick',b:'.'.repeat(225),t:0,pl:0,st:'ab',pq:['n'],of:[r3(),r3()],pk:[-1,-1],ch:[[],[]],us:[[],[]],tn:[0,0],sk:[0,0],need:[5,5],bc:[0,0],bm:[],fk:[],tr:[],hist:[],lm:-1,w:-1,wl:[],lg:'',un:0,ex:0});
+const oh=(p,k)=>OM.ch[p].includes(k),ou=(p,k)=>OM.us[p].filter(v=>v===k).length>=(k===11?2:1);
+const occ=i=>OM.b[i]!=='.'||OM.fk.some(f=>f[0]===i);
+const cl2=o=>JSON.parse(JSON.stringify(o)),osnap=()=>cl2({b:OM.b,bm:OM.bm,fk:OM.fk,tr:OM.tr});
 function pg(g){game=g;ren()}
 function go1(){game==='omok'?osolo():solo1()}
 function osolo(){solo=true;game='omok';R={emit(){}};omMe=0;opp='ai';seen=Date.now();OM=newO(0);code='';ren()}
 function otick(){if(!R||spec)return;R.emit('os',{id,O:OM});if(OM)specs.forEach(c=>{if(c.open)c.send({t:'os',d:{id,O:OM}})})}
+function osync(){OM.n++;otick();oren()}
 function orx(d){if(!d||!d.O||d.id===id)return;seen=Date.now();opp=d.id;const r=d.O;
  if(spec){if(JSON.stringify(r)!==JSON.stringify(OM)){OM=r;oren()}return}
- if(!OM||(r.g||0)>(OM.g||0)||((r.g||0)===(OM.g||0)&&r.n>OM.n)){OM=r;oren()}}
-function owin(b,i){const c=b[i],x=i%15,y=i/15|0;for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){const l=[i];for(const sg of[1,-1]){let X=x+dx*sg,Y=y+dy*sg;while(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]===c){l.push(Y*15+X);X+=dx*sg;Y+=dy*sg}}if(l.length>=5)return l}return null}
-function omMove(i,c){const a=OM.b.split('');a[i]=c?'o':'x';OM.b=a.join('');OM.n++;OM.lm=i;const w=owin(OM.b,i);
- if(w){OM.ph='over';OM.w=c;OM.wl=w}else if(OM.n>=225){OM.ph='over';OM.w=-1}else OM.t=1-OM.t;otick();oren()}
-function oplace(i){if(spec||!OM||OM.ph!=='play'||OM.t!==omMe||OM.b[i]!=='.')return;omMove(i,omMe)}
-function orematch(){OM=newO((OM.g||0)+1);otick();oren()}
+ if(OM&&r.g===OM.g&&OM.ph==='pick'&&r.ph==='pick'){const o=1-omMe;if(r.pk[o]>=0&&OM.pk[o]<0){OM.pk[o]=r.pk[o];chkO();oren()}return}
+ if(!OM||(r.g||0)>(OM.g||0)||(r.g===OM.g&&(r.n>OM.n||(OM.ph==='pick'&&r.ph!=='pick')))){OM=r;omode=null;osl=[];oren()}}
+function owin(b,i,nd){const c=b[i];if(c!=='x'&&c!=='o')return null;const x=i%15,y=i/15|0;
+ for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){const l=[i];for(const sg of[1,-1]){let X=x+dx*sg,Y=y+dy*sg;while(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]===c){l.push(Y*15+X);X+=dx*sg;Y+=dy*sg}}if(l.length>=nd)return l}return null}
+function owinSet(q,w){OM.ph='over';OM.w=q;OM.wl=w}
+function anyWin(p){for(const q of[p,1-p])for(let i=0;i<225;i++)if(OM.b[i]===OCH[q]){const w=owin(OM.b,i,OM.need[q]);if(w)return[q,w]}return null}
+function sh3o(p){return pick3(OM.ch[p],1)}
+function takeAug(p,j){const k=OM.of[p][j];OM.ch[p].push(k);if(k===1)OM.bc[p]++}
+function chkO(){if(omMe!==0||spec||!OM||OM.ph!=='pick'||OM.pk[0]<0||OM.pk[1]<0)return;
+ for(const p of[0,1]){OM.ch[p]=[OM.of[p][OM.pk[p]]];if(OM.ch[p][0]===1)OM.bc[p]=1}
+ for(const p of[0,1])if(oh(p,5))for(let n=0;n<2;n++){const em=[];for(let i=0;i<225;i++)if(OM.b[i]==='.')em.push(i);const j=em[Math.random()*em.length|0],a=OM.b.split('');a[j]=OCH[p];OM.b=a.join('')}
+ OM.ph='play';OM.t=0;ostart();osync()}
+function ostart(){const p=OM.t;OM.st='ab';OM.pq=['n'];
+ if(oh(p,1)&&OM.tn[p]>0&&OM.tn[p]%10===0)OM.bc[p]++;
+ if(OM.sk[p]>0){OM.sk[p]--;OM.lg=NM2[p]+': 턴 건너뜀 (킬각)';OM.tn[p]++;OM.pl++;otimers();if(OM.ph==='over')return;OM.t=1-p;return ostart()}
+ OM.hist.push(osnap());OM.hist=OM.hist.slice(-3);
+ if(OM.tn[p]>0&&OM.tn[p]%10===0){const o=sh3o(p);if(o.length){OM.ph='rp';OM.of[p]=o;OM.pk[p]=-1}}}
+function oend(){const p=OM.t;OM.tn[p]++;OM.pl++;otimers();if(OM.ph==='over')return osync();
+ if(!OM.b.includes('.')){OM.ph='over';OM.w=-1;return osync()}
+ OM.t=1-p;ostart();osync()}
+function otimers(){const L=OM.pl,due=OM.bm.filter(e=>L>=e[2]);OM.bm=OM.bm.filter(e=>L<e[2]);
+ for(const e of due){if(!'xo'.includes(OM.b[e[0]]))continue;const x=e[0]%15,y=e[0]/15|0,a=OM.b.split('');
+  for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const X=x+dx,Y=y+dy;if(X<0||X>14||Y<0||Y>14)continue;const j=Y*15+X;if(a[j]==='x'||a[j]==='o'){a[j]='.';OM.bm=OM.bm.filter(z=>z[0]!==j);OM.tr=OM.tr.filter(z=>z[0]!==j)}}
+  OM.b=a.join('');OM.lg='💥 폭탄 폭발!';OM.ex++}
+ for(const e of OM.tr.filter(z=>L>=z[2])){if(OM.b[e[0]]===OCH[1-e[1]]){const a=OM.b.split('');a[e[0]]=OCH[e[1]];OM.b=a.join('');OM.lg='배신! 돌이 넘어갔습니다';const w=owin(OM.b,e[0],OM.need[e[1]]);if(w&&OM.ph!=='over')owinSet(e[1],w)}}
+ OM.tr=OM.tr.filter(z=>L<z[2]);OM.fk=OM.fk.filter(f=>L<f[2])}
+function ocapt(p,i){if(!oh(p,11)||ou(p,11))return;const c=OCH[p],e=OCH[1-p],a=OM.b.split(''),x=i%15,y=i/15|0,seen=new Set(),cap=[];
+ for(const[dx,dy]of nb4){const X=x+dx,Y=y+dy;if(X<0||X>14||Y<0||Y>14)continue;const s0=Y*15+X;if(a[s0]!==e||seen.has(s0))continue;
+  const g=[s0],q=[s0];seen.add(s0);let lib=0;
+  while(q.length){const cur=q.pop(),cx=cur%15,cy=cur/15|0;for(const[ax,ay]of nb4){const U=cx+ax,V=cy+ay;if(U<0||U>14||V<0||V>14)continue;const n=V*15+U;
+   if(a[n]===e){if(!seen.has(n)){seen.add(n);g.push(n);q.push(n)}}else if(a[n]==='.')lib=1}}
+  if(!lib)cap.push(...g)}
+ if(!cap.length)return;
+ for(const j of cap){a[j]='.';OM.bm=OM.bm.filter(z=>z[0]!==j);OM.tr=OM.tr.filter(z=>z[0]!==j)}
+ OM.b=a.join('');OM.us[p].push(11);OM.un++;OM.ub=[OM.un,p,11];OM.ex++;OM.lg='바둑! 상대 돌 '+cap.length+'개 포획'}
+function ostone(p,i){const ty=OM.pq[0];if(!ty||occ(i)||OM.ph!=='play'||OM.st!=='pl')return false;OM.lg=NM2[p]+': 착수';
+ OM.fk=OM.fk.filter(f=>!(f[1]!==p&&Math.max(Math.abs(f[0]%15-i%15),Math.abs((f[0]/15|0)-(i/15|0)))<=1));
+ if(ty==='f')OM.fk.push([i,p,OM.pl+4]);
+ else{const a=OM.b.split('');a[i]=OCH[p];OM.b=a.join('');if(ty==='b')OM.bm.push([i,p,OM.pl+4]);
+  const w=owin(OM.b,i,OM.need[p]);if(w){owinSet(p,w);OM.lm=i;OM.lg=NM2[p]+' 승리!';osync();return true}ocapt(p,i)}
+ OM.lm=i;OM.pq.shift();if(OM.pq.length)osync();else oend();return true}
+function oquake(d){const dx=[0,0,-1,1][d],dy=[-1,1,0,0][d],nb=Array(225).fill('.'),mp={};
+ for(let i=0;i<225;i++)if(OM.b[i]==='r')nb[i]='r';
+ for(let L=0;L<15;L++){let slot=0;for(let k=0;k<15;k++){const x=dx?(dx>0?14-k:k):L,y=dy?(dy>0?14-k:k):L,i=y*15+x;
+  if(OM.b[i]==='r'){slot=k+1;continue}
+  if(OM.b[i]!=='.'){const sx=dx?(dx>0?14-slot:slot):L,sy=dy?(dy>0?14-slot:slot):L,j=sy*15+sx;nb[j]=OM.b[i];mp[i]=j;slot++}}}
+ OM.b=nb.join('');OM.bm.forEach(e=>{e[0]=mp[e[0]]});OM.tr.forEach(e=>{e[0]=mp[e[0]]});OM.fk=[]}
+function oabil(p,k,a){const c=OCH[p],e=OCH[1-p];
+ if(OM.ph!=='play'||OM.st!=='ab'||OM.t!==p)return false;
+ if(k===1){if(!(OM.bc[p]>0))return false}else if(ou(p,k)||!oh(p,k))return false;
+ if(k===0){OM.pq=['n','n'];OM.sk[p]=1}
+ else if(k===1){OM.bc[p]--;OM.pq=['b']}
+ else if(k===2){if(OM.hist.length<3)return false;const s=OM.hist[OM.hist.length-3];OM.b=s.b;OM.bm=cl2(s.bm);OM.fk=cl2(s.fk);OM.tr=cl2(s.tr);OM.hist=[osnap()];OM.lm=-1}
+ else if(k===3)OM.need[1-p]=6;
+ else if(k===4){if(OM.b[a]!==e)return false;OM.tr.push([a,p,OM.pl+6])}
+ else if(k===6){[0,1,2,3].sort(()=>Math.random()-.5).forEach(oquake);const w=anyWin(p);if(w)owinSet(w[0],w[1])}
+ else if(k===7){const[m,t]=a;if(OM.b[m]!==c||OM.b[t]!==e)return false;const arr=OM.b.split('');arr[m]=e;arr[t]=c;const s2=arr.join('');
+  if(owin(s2,m,OM.need[1-p])||owin(s2,t,OM.need[p]))return false;OM.b=s2;
+  for(const L of[OM.bm,OM.tr])L.forEach(z=>{if(z[0]===m)z[0]=t;else if(z[0]===t)z[0]=m})}
+ else if(k===8){const[i,j]=a;if(i===j||occ(i)||occ(j))return false;const arr=OM.b.split('');arr[i]=arr[j]='r';OM.b=arr.join('')}
+ else if(k===9)OM.pq=['n','f'];
+ else if(k===10){const[f,t]=a,dx=t%15-f%15,dy=(t/15|0)-(f/15|0);
+  if(OM.b[f]!==c||occ(t)||!(dx||dy)||Math.abs(dx)>2||Math.abs(dy)>2||!(dx===0||dy===0||Math.abs(dx)===Math.abs(dy)))return false;
+  const arr=OM.b.split('');arr[f]='.';arr[t]=c;OM.b=arr.join('');for(const L of[OM.bm,OM.tr])L.forEach(z=>{if(z[0]===f)z[0]=t});
+  const w=owin(OM.b,t,OM.need[p]);if(w)owinSet(p,w);else ocapt(p,t)}
+ if(k!==1)OM.us[p].push(k);
+ OM.un++;OM.ub=[OM.un,p,k];OM.lg=NM2[p]+': '+AN[k]+(OM.ph==='over'?' 승리!':' 사용');
+ if(k===7){omode=null;osl=[];oend();return true}
+ if(OM.ph!=='over')OM.st='pl';omode=null;osl=[];osync();return true}
+function opick(j){if(spec||!OM||OM.ph!=='pick'||OM.pk[omMe]>=0)return;OM.pk[omMe]=j;osync();chkO()}
+function orp(j){if(spec||!OM||OM.ph!=='rp'||OM.t!==omMe)return;takeAug(omMe,j);OM.ph='play';OM.lg=NM2[omMe]+': 추가 증강 획득';osync()}
+function oskip(){if(spec||!OM||OM.ph!=='play'||OM.t!==omMe||OM.st!=='ab')return;omode=null;osl=[];OM.st='pl';OM.lg=NM2[omMe]+': 능력 없이 진행';osync()}
+function oab(k){if(spec||!OM||OM.ph!=='play'||OM.st!=='ab'||OM.t!==omMe)return;
+ if([0,1,2,3,6,9].includes(k)){if(!oabil(omMe,k))toast('지금은 사용할 수 없어요');return}
+ omode=omode===k?null:k;osl=[];oren()}
+function oquakeGo(d){if(!spec&&omode===6)oabil(omMe,6,d)}
+function obc(i){if(spec||!OM||OM.ph!=='play'||OM.t!==omMe)return;
+ if(OM.st==='pl'){ostone(omMe,i);return}
+ if(OM.st!=='ab'||omode===null)return;const c=OCH[omMe],e=OCH[1-omMe],b=OM.b;
+ if(omode===4){if(b[i]===e)oabil(omMe,4,i)}
+ else if(omode===8){if(!occ(i)&&!osl.includes(i)){osl.push(i);if(osl.length===2){if(!oabil(omMe,8,[...osl])){osl=[];toast('둘 수 없는 위치예요');oren()}}else oren()}}
+ else if(omode===7){if(b[i]===c){osl=[i];oren()}else if(osl.length&&b[i]===e){if(!oabil(omMe,7,[osl[0],i])){toast('5목이 완성되는 위치로는 바꿀 수 없어요');osl=[];oren()}}}
+ else if(omode===10){if(b[i]===c){osl=[i];oren()}else if(osl.length&&b[i]==='.'){if(!oabil(omMe,10,[osl[0],i]))toast('이동할 수 없는 칸이에요')}}}
+function orematch(){OM=newO((OM.g||0)+1);omode=null;osl=[];otick();oren()}
 function oscore(b,i,c){const x=i%15,y=i/15|0;let t=0;for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){let n=1,open=0;
  for(const sg of[1,-1]){let X=x+dx*sg,Y=y+dy*sg;while(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]===c){n++;X+=dx*sg;Y+=dy*sg}if(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]==='.')open++}
  t+=n>=5?1e5:n===4?(open===2?1e4:open===1?1e3:0):n===3?(open===2?1e3:open===1?100:0):n===2?(open===2?100:open===1?10:0):1}return t}
-function oAI(){const b=OM.b;if(OM.n===0)return 112;let best=-1,bs=-1;
- for(let i=0;i<225;i++){if(b[i]!=='.')continue;const x=i%15,y=i/15|0;let near=0;
-  for(let dx=-2;dx<3&&!near;dx++)for(let dy=-2;dy<3;dy++){const X=x+dx,Y=y+dy;if(X>=0&&X<15&&Y>=0&&Y<15&&b[Y*15+X]!=='.'){near=1;break}}
+function oAI(){const b=OM.b;let best=-1,bs=-1;const st=[...b].filter(c=>c==='x'||c==='o').length;
+ if(!st&&!occ(112))return 112;
+ for(let i=0;i<225;i++){if(occ(i))continue;const x=i%15,y=i/15|0;let near=0;
+  for(let dx=-2;dx<3&&!near;dx++)for(let dy=-2;dy<3;dy++){const X=x+dx,Y=y+dy;if(X>=0&&X<15&&Y>=0&&Y<15&&(b[Y*15+X]==='x'||b[Y*15+X]==='o')){near=1;break}}
   if(!near)continue;const sc=oscore(b,i,'o')*1.05+oscore(b,i,'x')+Math.random();if(sc>bs){bs=sc;best=i}}
- return best>=0?best:112}
-setInterval(()=>{if(!solo||game!=='omok'||!OM)return;
- if(OM.ph==='play'&&OM.t===1&&!aiBusy){if(!oaiAt)oaiAt=Date.now()+900+Math.random()*500;if(Date.now()>=oaiAt){aiBusy=1;oaiAt=0;omMove(oAI(),1);aiBusy=0}}else oaiAt=0},200);
-function oren(){const A=document.getElementById('app'),nm=['흑','백'];
- if(!OM){A.innerHTML=`<div class="eyebrow">AFTER HOURS · OMOK</div><h1>오목</h1><p class="sub">방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
- const my=!spec&&OM.ph==='play'&&OM.t===omMe,gg=OM.g||0;
- if(og===gg&&OM.n>pvN){sfx('move')}
- if(og===gg&&oph!=='over'&&OM.ph==='over')sfx(spec||OM.w===omMe?'win':OM.w<0?'move':'lose');
- if(my&&otk!==gg*1000+OM.n){otk=gg*1000+OM.n;if(og===gg||OM.n>0){sfx('turn');toast('내 차례입니다!')}}
- og=gg;oph=OM.ph;pvN=OM.n;
+ if(best<0){const em=[];for(let i=0;i<225;i++)if(!occ(i))em.push(i);best=em[Math.random()*em.length|0]}
+ return best}
+function oai(act){const p=1,e=OCH[0];
+ if(act==='pk'){OM.pk[1]=Math.random()*3|0;osync();chkO();return}
+ if(act==='rp'){takeAug(1,Math.random()*OM.of[1].length|0);OM.ph='play';osync();return}
+ if(act==='ab'){const em=[],hs=[];for(let i=0;i<225;i++){if(!occ(i))em.push(i);if(OM.b[i]===e)hs.push(i)}
+  const tr=(k,a)=>oh(p,k)&&!ou(p,k)&&oabil(p,k,a);
+  if(tr(3))return;if(oh(p,1)&&OM.bc[1]>0&&Math.random()<.5&&oabil(p,1))return;
+  if(Math.random()<.2&&hs.length&&tr(4,hs[Math.random()*hs.length|0]))return;
+  if(Math.random()<.15){const c=em.filter(i=>i%15>3&&i%15<11&&(i/15|0)>3&&(i/15|0)<11);if(c.length>1&&tr(8,[c[Math.random()*c.length|0],c[Math.random()*c.length|0]]))return}
+  if(Math.random()<.1&&tr(0))return;
+  OM.st='pl';osync();return}
+ if(act==='pl')ostone(1,oAI())}
+setInterval(()=>{if(!solo||game!=='omok'||!OM||aiBusy)return;let act=null;
+ if(OM.ph==='pick'&&OM.pk[1]<0)act='pk';else if(OM.ph==='rp'&&OM.t===1)act='rp';else if(OM.ph==='play'&&OM.t===1)act=OM.st;
+ if(!act){oaiAt=0;return}if(!oaiAt)oaiAt=Date.now()+(act==='pk'?400:act==='ab'?800:900+Math.random()*500);
+ if(Date.now()<oaiAt)return;oaiAt=0;aiBusy=1;try{oai(act)}catch(er){console.error(er)}aiBusy=0},200);
+function oren(){const A=document.getElementById('app'),H0='<div class="eyebrow">AFTER HOURS · AUGMENT OMOK</div><h1>증강오목</h1>';
+ if(!OM){A.innerHTML=H0+`<p class="sub">방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
+ const gg=OM.g||0,my=!spec&&OM.ph==='play'&&OM.t===omMe;
+ if(og!==gg){ous=(og===-1&&OM.ub)?OM.ub[0]:0;plm=OM.lm;pex=OM.ex||0;oph=OM.ph;otk=-1}
+ else{if(OM.lm!==plm&&OM.lm>=0)sfx('move');if((OM.ex||0)>pex)sfx('cap');if(oph!=='over'&&OM.ph==='over')sfx(spec||OM.w===omMe?'win':OM.w<0?'move':'lose')}
+ if(OM.ub&&OM.ub[0]!==ous){ous=OM.ub[0];if(og===gg||og===-1){const hid=!spec&&[4,9].includes(OM.ub[2])&&OM.ub[1]!==omMe;bigToast((spec?NM2[OM.ub[1]]:OM.ub[1]===omMe?'나':'상대')+' · '+(hid?'능력':AN[OM.ub[2]])+' 사용!')}}
+ if(my&&OM.st==='ab'&&otk!==gg*1000+OM.pl){otk=gg*1000+OM.pl;sfx('turn');toast('내 차례입니다! (능력 → 돌 놓기)')}
+ og=gg;plm=OM.lm;pex=OM.ex||0;oph=OM.ph;
+ const card=(k,j,fn,on,dis)=>`<button class="cd ${on?'on':''} ${k===0?'plat':''}" ${dis?'disabled':''} onclick="${fn}(${j})"><span class="tag ${OP[k]?'':'on'}">${k===0?'PLATINUM ✦':OP[k]?'PASSIVE':'ACTIVE'}</span><b>${k===0?'✨ ':''}${AN[k]}</b><div class="sm">${AD[k]}</div></button>`;
+ const back='<div class="row"><button class="bt" onclick="location.reload()">← 처음으로</button></div>';
+ if(OM.ph==='pick'){
+  if(spec){A.innerHTML=H0+'<p class="sub">플레이어들이 증강을 고르는 중...</p>'+back;return}
+  const dn=OM.pk[omMe]>=0;
+  A.innerHTML=H0+'<div class="eyebrow">PICK ONE</div><p class="sub">무작위 3개 중 증강 1개를 고르세요.</p>'+OM.of[omMe].map((k,j)=>card(k,j,'opick',OM.pk[omMe]===j,dn)).join('')+(dn?'<p class="sm">상대의 선택을 기다리는 중...</p>':'')+back;return}
+ if(OM.ph==='rp'){
+  if(spec||OM.t!==omMe){A.innerHTML=H0+`<p class="sub">${spec?NM2[OM.t]:'상대'}가 추가 증강을 고르는 중...</p>`+back;return}
+  A.innerHTML=H0+'<div class="eyebrow">NEW AUGMENT</div><p class="sub">10턴 달성! 추가 증강 1개를 고르세요.</p>'+OM.of[omMe].map((k,j)=>card(k,j,'orp',false,false)).join('')+back;return}
  let svg='<svg viewBox="0 0 15 15"><defs><radialGradient id="gb" cx="35%" cy="30%"><stop offset="0" stop-color="#666"/><stop offset="1" stop-color="#050505"/></radialGradient><radialGradient id="gw" cx="35%" cy="30%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfcfcf"/></radialGradient></defs><g stroke="#5a3d12" stroke-width=".05">';
  for(let i=0;i<15;i++)svg+=`<line x1=".5" y1="${i+.5}" x2="14.5" y2="${i+.5}"/><line x1="${i+.5}" y1=".5" x2="${i+.5}" y2="14.5"/>`;
  svg+='</g>';for(const[x,y]of[[3,3],[3,11],[7,7],[11,3],[11,11]])svg+=`<circle cx="${x+.5}" cy="${y+.5}" r=".11" fill="#5a3d12"/>`;
+ const st1=(i,c,op)=>{const x=i%15+.5,y=(i/15|0)+.5;return `<circle cx="${x+.03}" cy="${y+.05}" r=".43" fill="rgba(0,0,0,.35)"/><circle cx="${x}" cy="${y}" r=".43" fill="url(#${c==='x'?'gb':'gw'})" opacity="${op||1}"/>`};
  for(let i=0;i<225;i++){const c=OM.b[i];if(c==='.')continue;const x=i%15+.5,y=(i/15|0)+.5;
-  svg+=`<circle cx="${x+.03}" cy="${y+.05}" r=".43" fill="rgba(0,0,0,.35)"/><circle cx="${x}" cy="${y}" r=".43" fill="url(#${c==='x'?'gb':'gw'})"/>`;
+  if(c==='r'){svg+=`<circle cx="${x}" cy="${y}" r=".44" fill="#7d7d80" stroke="#4a4a4d" stroke-width=".05"/><circle cx="${x-.12}" cy="${y-.14}" r=".14" fill="#a5a5a8"/>`;continue}
+  svg+=st1(i,c);
   if(OM.wl&&OM.wl.includes(i))svg+=`<circle cx="${x}" cy="${y}" r=".5" fill="none" stroke="#f0b968" stroke-width=".09"/>`;
   if(i===OM.lm)svg+=`<circle cx="${x}" cy="${y}" r=".12" fill="${c==='x'?'#ffd54a':'#d22'}"/>`}
+ for(const f of OM.fk){const mine=!spec&&f[1]===omMe,x=f[0]%15+.5,y=(f[0]/15|0)+.5;svg+=st1(f[0],OCH[f[1]],mine?.6:1);if(mine)svg+=`<circle cx="${x}" cy="${y}" r=".46" fill="none" stroke="#5ad1c8" stroke-width=".06" stroke-dasharray=".12 .1"/>`;if(f[0]===OM.lm)svg+=`<circle cx="${x}" cy="${y}" r=".12" fill="${f[1]?'#d22':'#ffd54a'}"/>`}
+ for(const e of OM.bm){const x=e[0]%15+.5,y=(e[0]/15|0)+.5;svg+=`<text x="${x}" y="${y+.2}" font-size=".6" text-anchor="middle">💣</text><text x="${x+.3}" y="${y-.22}" font-size=".38" fill="#ff6a5a" font-weight="700" text-anchor="middle">${Math.max(1,e[2]-OM.pl)}</text>`}
+ if(!spec)for(const e of OM.tr)if(e[1]===omMe){const x=e[0]%15+.5,y=(e[0]/15|0)+.5;svg+=`<circle cx="${x}" cy="${y}" r=".47" fill="none" stroke="#b36bff" stroke-width=".07"/>`}
+ for(const i of osl){const x=i%15+.5,y=(i/15|0)+.5;svg+=`<circle cx="${x}" cy="${y}" r=".5" fill="none" stroke="#2ad46a" stroke-width=".1"/>`}
+ if(omode===10&&osl.length===1){const f=osl[0];for(let t=0;t<225;t++){const dx=t%15-f%15,dy=(t/15|0)-(f/15|0);if(OM.b[t]==='.'&&!occ(t)&&(dx||dy)&&Math.abs(dx)<=2&&Math.abs(dy)<=2&&(!dx||!dy||Math.abs(dx)===Math.abs(dy)))svg+=`<circle cx="${t%15+.5}" cy="${(t/15|0)+.5}" r=".13" fill="#2ad46a"/>`}}
  svg+='</svg>';
- const st=OM.ph==='over'?(OM.w<0?'무승부':spec?nm[OM.w]+' 승리!':OM.w===omMe?'🎉 승리!':'패배...'):spec?nm[OM.t]+' 차례':my?'내 차례':'상대 차례';
- let h=`<div class="eyebrow">AFTER HOURS · OMOK</div><h1>오목</h1><div class="sm">${solo?'AI 대전':'방 '+code} · ${spec?'<b>👀 관전 중</b>':'나: <b>'+nm[omMe]+'</b> ('+(omMe?'후공':'선공')+')'}</div>`;
+ const stt=OM.ph==='over'?(OM.w<0?'무승부':spec?NM2[OM.w]+' 승리!':OM.w===omMe?'🎉 승리!':'패배...'):spec?NM2[OM.t]+' 차례':my?'내 차례 · '+(OM.st==='ab'?'① 능력 사용':'② 돌 놓기'):'상대 차례';
+ let h=H0+`<div class="sm">${solo?'AI 대전':'방 '+code} · ${spec?'<b>👀 관전 중</b>':'나: <b>'+NM2[omMe]+'</b> ('+(omMe?'후공':'선공')+')'}</div>`;
  if(!spec&&(OM.ph==='over'||gone()))h+=`<div class="row">${gone()&&!solo?'<b>상대가 나갔습니다.</b>':''}<button class="bt" onclick="orematch()">다시하기</button></div>`;
- h+=`<div class="stat"><b>${st}</b><span class="sm">${nm[OM.t]}돌 차례 · ${OM.n}수</span></div><div class="ob" id="ob">${svg}</div><div class="sm">가로·세로·대각선으로 같은 색 돌 5개 이상을 먼저 이으면 승리합니다. (기본 룰, 금수 없음)</div><div class="row"><button class="bt" onclick="location.reload()">← 처음으로</button></div>`;
+ h+=`<div class="stat"><b>${stt}</b><span class="sm">${NM2[OM.t]}돌 · ${OM.pl}수째</span></div><div class="sm">${OM.lg||''}</div><div class="ob" id="ob">${svg}</div>`;
+ if(my&&OM.ph==='play'){
+  if(OM.st==='ab'){
+   h+='<div class="eyebrow">STEP 1 · 능력 사용 (선택)</div><div class="row">'+OM.ch[omMe].map(k=>{const dis=OP[k]||(k===1?!(OM.bc[omMe]>0):ou(omMe,k)||(k===2&&OM.hist.length<3));
+    return `<button class="bt ${omode===k?'on':''} ${k===0?'plat':''}" ${dis?'disabled':''} onclick="oab(${k})">${AN[k]}${OP[k]?(k===11?' (패시브 · '+Math.max(0,2-OM.us[omMe].filter(v=>v===11).length)+'회 남음)':' (패시브)'):k===1?' ×'+OM.bc[omMe]:ou(omMe,k)?' ✓사용':''}</button>`}).join('')+'<button class="bt pri" onclick="oskip()">돌 놓기 →</button></div>';
+   const ins={4:'상대 돌 하나를 클릭하세요 (5턴 뒤 내 돌로 변해요)',8:`돌을 놓을 수 없게 할 빈 칸 2곳을 클릭하세요 (${osl.length}/2)`,7:osl.length?'맞바꿀 상대 돌을 클릭하세요':'먼저 내 돌을 클릭하세요',10:osl.length?'이동할 칸을 클릭하세요 (2칸 이내 직선)':'움직일 내 돌을 클릭하세요',6:'미끄러질 방향을 고르세요'};
+   if(omode!==null)h+=`<div class="sm"><b>${AN[omode]}</b>: ${ins[omode]}</div>`+(omode===6?'<div class="row">'+['↑','↓','←','→'].map((a,d)=>`<button class="bt" onclick="oquakeGo(${d})">${a}</button>`).join('')+'</div>':'');
+  }else h+=`<div class="eyebrow">STEP 2 · 돌 놓기</div><div class="sm">남은 착수: <b>${OM.pq.map(t=>({n:'일반 돌',f:'가짜 돌 (상대 눈에는 진짜처럼 보여요)',b:'💣 폭탄 돌'}[t])).join(' → ')}</b></div>`}
+ const fm=p=>OM.ch[p].map(k=>AN[k]+(!OP[k]&&ou(p,k)?'(사용)':'')).join(', ')||'-';
+ h+=spec?`<div class="sm">흑: ${fm(0)}<br>백: ${fm(1)}</div>`:`<div class="sm">내 증강: ${fm(omMe)}<br>상대 증강: ${fm(1-omMe)}</div>`;
+ h+=`<details class="sm" style="margin-top:6px"><summary>증강 설명 보기</summary>${[...new Set([...OM.ch[0],...OM.ch[1]])].map(k=>`<div style="margin-top:6px"><b>${AN[k]}</b> — ${AD[k]}</div>`).join('')}</details>`;
+ h+=`<div class="sm" style="margin-top:6px">${OM.need[0]>5||OM.need[1]>5?'⚠️ '+NM2[OM.need[0]>5?0:1]+'의 승리 조건: 6목 이상 · ':''}5목 이상을 먼저 이으면 승리 (능력 → 돌 놓기 순서)</div>`+back;
  A.innerHTML=h;
- const bd=document.getElementById('ob');bd.onpointerup=e=>{const r=bd.getBoundingClientRect(),cl=v=>Math.min(14,Math.max(0,v));oplace(cl(Math.floor((e.clientY-r.top)/r.height*15))*15+cl(Math.floor((e.clientX-r.left)/r.width*15)))}}
-let pvN=-1;
+ const bd=document.getElementById('ob');bd.onpointerup=e=>{const r=bd.getBoundingClientRect(),c2=v=>Math.min(14,Math.max(0,v));obc(c2(Math.floor((e.clientY-r.top)/r.height*15))*15+c2(Math.floor((e.clientX-r.left)/r.width*15)))}}
 function bf(){const a=S.b.split('');for(const f of S.fire||[])a[f[1]*9+f[0]]='*';for(const c of S.cats||[])a[c[1]*9+c[0]]='*';return a.join('')}
 function recMoved(b,x,y){const r=[];for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const X=x+dx,Y=y+dy;if(P(X,Y)&&b[Y*9+X]!=='.'&&sd(b[Y*9+X])===me)r.push([X,Y,dx,dy])}return r}
 function recPlan(ax,ay,bx,by){const b=S.b,f=bf();let m=[];
@@ -356,13 +491,13 @@ function ren(){if(quiet)return;
 <div class="eyebrow">오늘의 게임 02</div>
 <div style="display:grid;gap:12px;margin-top:10px">
 <button class="gcard" onclick="pg('janggi')"><span class="tag on">STRATEGY · AUGMENT</span><h3>⚔️ 증강 장기</h3><span class="sm">증강을 골라 판을 뒤집는 장기.<br>랜덤 증강 3개 중 2개를 고르고, 5턴마다 새 증강을 뽑아요.</span><b style="color:var(--ac);margin-top:4px">플레이하기 ↗</b></button>
-<button class="gcard" onclick="pg('omok')"><span class="tag on">CLASSIC · FIVE IN A ROW</span><h3>⚫ 오목</h3><span class="sm">가로·세로·대각선으로 다섯 줄을 먼저 이으면 승리.<br>기본 룰로 가볍게 한 판.</span><b style="color:var(--ac);margin-top:4px">플레이하기 ↗</b></button>
+<button class="gcard" onclick="pg('omok')"><span class="tag on">AUGMENT · FIVE IN A ROW</span><h3>⚫ 증강오목</h3><span class="sm">능력을 쓰고 돌을 놓는 오목.<br>무작위 증강 3개 중 1개를 고르고, 10턴마다 새 증강을 얻어요.</span><b style="color:var(--ac);margin-top:4px">플레이하기 ↗</b></button>
 </div>
 <div class="foot">AFTER HOURS ✧ Made for nights worth sharing. ☾</div>`;return}
- if(!R){const om=game==='omok',gn=om?'오목':'증강 장기';A.innerHTML=`<button class="bt" style="padding:4px 14px;font-size:12px" onclick="pg(null)">← 게임 선택</button>
-<div class="eyebrow" style="margin-top:14px">${om?'CLASSIC · FIVE IN A ROW':'STRATEGY · AUGMENT'}</div>
+ if(!R){const om=game==='omok',gn=om?'증강오목':'증강 장기';A.innerHTML=`<button class="bt" style="padding:4px 14px;font-size:12px" onclick="pg(null)">← 게임 선택</button>
+<div class="eyebrow" style="margin-top:14px">${om?'AUGMENT · FIVE IN A ROW':'STRATEGY · AUGMENT'}</div>
 <h1 class="hero">${om?'⚫':'⚔️'} ${gn}</h1>
-<p class="sub">${om?'다섯 줄을 먼저 이으면 승리! 기본 룰로 즐겨요.':'랜덤 증강으로 판을 뒤집는 장기예요.'}</p>
+<p class="sub">${om?'능력을 쓰고, 돌을 놓고, 다섯 줄을 먼저 이으면 승리!':'랜덤 증강으로 판을 뒤집는 장기예요.'}</p>
 <div class="eyebrow">플레이 방식을 선택하세요</div>
 <div class="grid2" style="margin-top:8px">
 <div class="gcard"><span class="tag on">TRUST YOUR INSTINCT</span><h3>🤖 AI와 대결</h3><p class="sm">혼자서도 바로 한 판.<br>입장 없이 곧바로 시작해요.</p><button class="bt pri" onclick="go1()">플레이하기 ↗</button></div>
@@ -370,7 +505,7 @@ function ren(){if(quiet)return;
 </div>
 <div class="eyebrow" style="margin-top:26px">A SEAT FOR EVERYONE</div>
 <h2 class="h2">모이는 방법은, 간단해요.</h2>
-<ol class="steps"><li><b>01</b><div><strong>방 코드를 정해요</strong><span class="sm">한 명이 먼저 입장해 방을 만들어요.</span></div></li><li><b>02</b><div><strong>코드를 나누면</strong><span class="sm">친구가 같은 게임, 같은 코드로 입장해요.</span></div></li><li><b>03</b><div><strong>${om?'방장이 흑으로 먼저 시작':'증강을 고르고 대국'}</strong><span class="sm">${om?'다섯 줄을 먼저 이으면 승리!':'마·상 배치와 증강 2개를 고르면 시작!'}</span></div></li></ol>
+<ol class="steps"><li><b>01</b><div><strong>방 코드를 정해요</strong><span class="sm">한 명이 먼저 입장해 방을 만들어요.</span></div></li><li><b>02</b><div><strong>코드를 나누면</strong><span class="sm">친구가 같은 게임, 같은 코드로 입장해요.</span></div></li><li><b>03</b><div><strong>${om?'증강을 고르고 방장이 흑으로 시작':'증강을 고르고 대국'}</strong><span class="sm">${om?'무작위 3개 중 증강 1개를 고르면 시작!':'마·상 배치와 증강 2개를 고르면 시작!'}</span></div></li></ol>
 <div class="foot">AFTER HOURS ✧ Made for nights worth sharing. ☾</div>`;return}
  if(game==='omok')return oren();
  if(me<0||!S){A.innerHTML=h+`<p>방 <b>${code}</b> — 상대를 기다리는 중... 상대도 같은 코드로 입장하세요.</p>`;return}
