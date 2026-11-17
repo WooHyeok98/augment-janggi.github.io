@@ -635,7 +635,7 @@ ST.lt=k=>{lobby.T=k;lobbyBc();show()};
 ST.go=()=>{if(lobby.names.length<2)return;init(lobby.names.map(nm=>({nm,ai:false})),lobby.T);bc();show()};
 function draw(p,free){if(!G.deck.length)return false;if(!free){if(p.cash<p.cost)return false;p.cash-=p.cost;p.cost+=5000}p.hand.push(G.deck.pop());return true}
 function rumor(){const c=pk(G.C),g=pk([["증권가 80%",.8],["커뮤니티 50%",.5],["루머 30%",.3]]),t=c.next>0,up=Math.random()<g[1]?t:!t;return{cid:c.id,up,ok:up==t,src:g[0]}}
-function newRound(){const md={};Object.keys(SECT).forEach(s=>md[s]=rf(-1,1));G.C.forEach(c=>{const T=TR[c.tr];c.next=Math.max(-1.5,Math.min(1.5,Math.round((md[c.s]*.7*T.b+Math.max(-1.5,Math.min(1.5,c.chg))*.25+rf(-.8,.8)*T.n)*T.v*100)/100))});G.eff={quake:false,list:[]};G.news=mkNews(md);G.votes=new Set();G.sec=TS;G.ph="play";
+function newRound(){const md={};Object.keys(SECT).forEach(s=>md[s]=rf(-1,1));G.C.forEach(c=>{const T=TR[c.tr];c.next=Math.max(-1.5,Math.min(1.5,Math.round((md[c.s]*.7*T.b+Math.max(-1.5,Math.min(1.5,c.chg))*.25+rf(-.8,.8)*T.n)*T.v*100)/100))});G.eff={quake:false,list:[]};G.news=mkNews(md);G.news.forEach(n=>sys("📢 "+n));G.votes=new Set();G.sec=TS;G.ph="play";
 G.P.forEach(p=>{p.rum=Array.from({length:10},rumor);p.spy=null;p.shield=0});G.P.forEach(p=>{if(p.ai){aiAct(p);aiSay(p)}});G.cur=0}
 const hum=()=>G.P.map((p,i)=>i).filter(i=>!G.P[i].ai);
 const view=i=>{const s=G.P[i].spy;return{T:G.T,round:G.round,sec:G.sec,ph:G.ph,ev:G.ev&&{...G.ev,W:null,mw:G.ev.W&&G.ev.W[i]},rk:G.rk,news:G.news,res:G.res,votes:[...G.votes],you:i,C:G.C.map(c=>({...c,next:0})),P:G.P.map((q,j)=>j==i?q:{nm:q.nm,ai:q.ai,cash:q.cash,cost:q.cost,hold:s==j?q.hold:{},hl:s==j?q.hl:{},hand:[],btc:[],rum:[]})}};
