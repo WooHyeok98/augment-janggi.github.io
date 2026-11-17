@@ -77,6 +77,7 @@ input:focus{outline:none;border-color:var(--ac)}
 .st-i{border:1px solid var(--bd);border-radius:14px;padding:9px 13px;margin:6px 0;background:var(--bg2)}
 .st-ov{position:fixed;inset:0;z-index:50;background:rgba(5,9,12,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px}.st-ov>.gcard{width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.6)}.st-ov>.st-pop{max-width:720px;max-height:88dvh;overflow:auto}
 .st-rv{display:flex;justify-content:space-between;padding:3px 0;opacity:0;animation:stIn .4s forwards}@keyframes stIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.st-ov>.gcard{max-height:90dvh;overflow:auto}
+.st-news{font-size:13px;line-height:1.6;padding:10px 14px!important}.st-news .eyebrow{margin-bottom:4px}
 </style></head><body><div id="app"></div>
 <script>
 window.addEventListener('error',e=>{const d=document.createElement('div');d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#c00;color:#fff;padding:6px;font-size:12px;z-index:99';d.textContent='오류: '+e.message;document.body.appendChild(d)});
@@ -578,8 +579,9 @@ function ren(){if(quiet)return;
  if(S.fx&&S.fx.pre&&S.fx.n!==fxn){fxn=S.fx.n;anim(S.fx)}}
 /* ===== 주식게임 (AFTER HOURS · MARKET) ===== */
 (()=>{
-const SECT={반도체:["한빛반도체","나노칩","실리콘웨이브","퀀텀셀","테라메모리"],자동차:["대한모터스","스피드카","일렉트로드라이브","하이웨이","코리아오토"],바이오:["셀젠바이오","메디파마","제노헬스","바이오닉스","큐어랩"],에너지:["솔라윈드","그린에너지","그린플럭스","오일로드","수소파워"],건축:["대성건설","하늘건축","한강토건","스카이빌드","단단건설"]};
+const SECT={반도체:["한빛반도체","나노칩","실리콘웨이브"],자동차:["대한모터스","스피드카","일렉트로드라이브"],바이오:["셀젠바이오","메디파마","제노헬스"],에너지:["솔라윈드","그린에너지","그린플럭스"],건축:["대성건설","하늘건축","한강토건"]};
 const AUG=[["살 날리기","지정한 회사가 턴 종료 시 -50~-200% 하락"],["종목 추천좀","다른 플레이어의 보유 주식을 이번 턴 동안 확인"],["천재지변","모든 회사가 -1~-150% 하락"],["호재요~호재!","지정한 회사가 턴 종료 시 +50~+200% 상승"],["진짜야?","참인 찌라시 하나를 알려줌"],["복권","만원 카드 3장(30,000원) 획득"],["비트코인","가치 50,000원, 매턴 -100~+100% 변동, 판매 가능"],["세금 폭탄","지정한 플레이어의 현금 20%를 가져옴"],["저격","지정한 플레이어가 가장 많이 보유한 종목을 턴 종료 시 -50~-100% 하락"],["적대적 M&A","지정한 플레이어의 최대 보유 종목 절반을 시장가 1.1배에 강제 인수 (내 현금 한도 내)"],["방어막","이번 턴 동안 나를 노린 세금 폭탄·저격·M&A를 1회 막음"],["가짜 뉴스","다른 모든 플레이어의 찌라시에 ‘증권가 80%’로 위장한 찌라시를 심음 (회사·방향은 내가 정함)"]];
+const TR=[{t:"🛡 안정형",b:1,n:.6,v:.55},{t:"⚡ 변동형",b:.5,n:1.3,v:1.1},{t:"🧭 업종형",b:1.6,n:.5,v:1}];
 const rf=(a,b)=>a+Math.random()*(b-a),RI=(a,b)=>Math.floor(rf(a,b+1)),pk=a=>a[RI(0,a.length-1)];
 const fmt=n=>Math.round(n).toLocaleString()+"원",pc=n=>(n>0?"+":"")+Math.round(n*100)+"%",esc=s=>String(s).replace(/[<>&"']/g,""),cl=n=>n>0?"st-u":n<0?"st-d":"",$=s=>document.querySelector(s),TS=300;
 let G=null,mode="",cf={n:1,T:5,nm:[]},lobby=null,peer=null,conns=[],hconn=null,code="",errM="",pop=null,LOG=[],Q={},dirty=0;
@@ -595,7 +597,7 @@ ST.cn=k=>{saveNm();cf.n=k;setup()};ST.ct=k=>{saveNm();cf.T=k;setup()};
 const bk='<button class="bt" style="padding:4px 14px;font-size:12px" onclick="pg(null)">← 게임 선택</button>';
 function setup(){const n=cf.n;
 A().innerHTML=`${bk}<div class="eyebrow" style="margin-top:14px">MARKET · AUGMENT</div><h1 class="hero">📈 <em>주식</em>게임</h1>
-<p class="sub">5개 종목 25개 회사. 찌라시와 증강으로 시장을 흔들어 보세요.</p>
+<p class="sub">5개 종목 15개 회사. 찌라시와 증강으로 시장을 흔들어 보세요.</p>
 <div class="gcard"><h3>🤖 AI와 대결</h3><p class="sm">AI 2명과 혼자서 바로 한 판.</p>
 <div class="eyebrow">턴 수</div><div class="row">${[5,10].map(k=>`<button class="bt ${k==cf.T?"on":""}" onclick="ST.ct(${k})">${k}턴</button>`).join("")}</div>
 <div class="eyebrow">닉네임</div><div class="row"><input class="nn" maxlength="10" value="${esc(cf.nm[0]||"")}" placeholder="닉네임"></div>
@@ -604,7 +606,7 @@ A().innerHTML=`${bk}<div class="eyebrow" style="margin-top:14px">MARKET · AUGME
 <div class="row"><input id="on" maxlength="10" placeholder="닉네임" value="${esc(cf.nm[0]||"")}"><input id="rc" placeholder="방 코드 (예: abc123)" value="${code}"><button class="bt pri" onclick="ST.join()">방 만들기 / 입장 ↗</button></div><div class="err">${errM}</div></div>
 <div class="foot">AFTER HOURS ✧ Made for nights worth sharing. ☾</div>`}
 function init(pl,T){const deck=[];for(let k=0;k<12;k++)for(let i=0;i<5;i++)deck.push(k);deck.sort(()=>Math.random()-.5);
-const C=[];Object.entries(SECT).forEach(([s,l])=>l.forEach(nm=>{const pr=RI(500,10000);C.push({id:C.length,s,nm,price:pr,lp:pr,chg:0,lchg:0})}));
+const C=[];Object.entries(SECT).forEach(([s,l])=>(tr=>l.forEach((nm,i)=>{const pr=RI(500,10000);C.push({id:C.length,s,nm,price:pr,lp:pr,chg:0,lchg:0,tr:tr[i]})}))([0,1,2].sort(()=>Math.random()-.5)));
 
 G={T,round:1,C,deck,ph:"play",eff:{},votes:new Set(),cur:0,P:pl.map((x,i)=>({nm:x.nm,ai:x.ai,pers:i==1?"aggro":"safe",cash:50000,hold:{},hl:{},hand:[],btc:[],cost:5000,rum:[],spy:null}))};
 LOG=[];Q={};pop=null;G.P.forEach(p=>{for(let i=0;i<3;i++)draw(p,true)});newRound()}
@@ -633,10 +635,10 @@ ST.lt=k=>{lobby.T=k;lobbyBc();show()};
 ST.go=()=>{if(lobby.names.length<2)return;init(lobby.names.map(nm=>({nm,ai:false})),lobby.T);bc();show()};
 function draw(p,free){if(!G.deck.length)return false;if(!free){if(p.cash<p.cost)return false;p.cash-=p.cost;p.cost+=5000}p.hand.push(G.deck.pop());return true}
 function rumor(){const c=pk(G.C),g=pk([["증권가 80%",.8],["커뮤니티 50%",.5],["루머 30%",.3]]),t=c.next>0,up=Math.random()<g[1]?t:!t;return{cid:c.id,up,ok:up==t,src:g[0]}}
-function newRound(){const md={};Object.keys(SECT).forEach(s=>md[s]=rf(-1,1));G.C.forEach(c=>c.next=Math.max(-1.5,Math.min(1.5,Math.round((md[c.s]*.7+Math.max(-1.5,Math.min(1.5,c.chg))*.25+rf(-.8,.8))*100)/100)));G.eff={quake:false,list:[]};G.votes=new Set();G.sec=TS;G.ph="play";
+function newRound(){const md={};Object.keys(SECT).forEach(s=>md[s]=rf(-1,1));G.C.forEach(c=>{const T=TR[c.tr];c.next=Math.max(-1.5,Math.min(1.5,Math.round((md[c.s]*.7*T.b+Math.max(-1.5,Math.min(1.5,c.chg))*.25+rf(-.8,.8)*T.n)*T.v*100)/100))});G.eff={quake:false,list:[]};G.news=mkNews(md);G.votes=new Set();G.sec=TS;G.ph="play";
 G.P.forEach(p=>{p.rum=Array.from({length:10},rumor);p.spy=null;p.shield=0});G.P.forEach(p=>{if(p.ai){aiAct(p);aiSay(p)}});G.cur=0}
 const hum=()=>G.P.map((p,i)=>i).filter(i=>!G.P[i].ai);
-const view=i=>{const s=G.P[i].spy;return{T:G.T,round:G.round,sec:G.sec,ph:G.ph,ev:G.ev&&{...G.ev,W:null,mw:G.ev.W&&G.ev.W[i]},rk:G.rk,res:G.res,votes:[...G.votes],you:i,C:G.C.map(c=>({...c,next:0})),P:G.P.map((q,j)=>j==i?q:{nm:q.nm,ai:q.ai,cash:q.cash,cost:q.cost,hold:s==j?q.hold:{},hl:s==j?q.hl:{},hand:[],btc:[],rum:[]})}};
+const view=i=>{const s=G.P[i].spy;return{T:G.T,round:G.round,sec:G.sec,ph:G.ph,ev:G.ev&&{...G.ev,W:null,mw:G.ev.W&&G.ev.W[i]},rk:G.rk,news:G.news,res:G.res,votes:[...G.votes],you:i,C:G.C.map(c=>({...c,next:0})),P:G.P.map((q,j)=>j==i?q:{nm:q.nm,ai:q.ai,cash:q.cash,cost:q.cost,hold:s==j?q.hold:{},hl:s==j?q.hl:{},hand:[],btc:[],rum:[]})}};
 function bc(){if(mode=="host")conns.forEach((c,i)=>c.open&&c.send({t:"g",g:view(i+1)}));rr()}
 function send(a,who){if(mode=="client")hconn.send({t:"act",a});else apply(who==null?ME():who,a)}
 function endTurn(){const W0=G.P.map(worth),ch={},mul=G.round>=G.T?2:1;G.C.forEach(c=>ch[c.id]=c.next*mul);if(G.eff.quake)G.C.forEach(c=>ch[c.id]=-rf(.01,1.5));
@@ -687,6 +689,11 @@ function results(){const r=G.res;A().innerHTML=`<div class="eyebrow" style="marg
 <div class="gcard">${r.map((x,i)=>`<div class="row" style="justify-content:space-between;margin:2px 0"><span>${i+1}위 · <b>${x.nm}</b></span><b style="color:var(--ac)">${fmt(x.w)}</b></div>`).join("")}</div>
 <div class="row">${mode=="local"?'<button class="bt pri" onclick="ST.again()">다시 하기</button>':""}<button class="bt" onclick="pg(null)">게임 선택</button></div>`}
 ST.again=()=>{G=null;mode="";setup()};
+function mkNews(md){const ss=Object.keys(SECT).sort(()=>Math.random()-.5),out=[];
+const sec=s=>{const v=md[s];if(Math.abs(v)<.25)return pk([s+" 업종, 방향성은 안개 속",s+" 업계 ‘지켜보자’ 분위기"]);const t=Math.random()<.7?v:-v;
+return (t>0?pk([s+" 업종, 하반기 기대감 솔솔",s+" 업계 ‘바닥 다졌나’ 관측",s+" 분야 투자 문의 늘어"]):pk([s+" 업종, 불확실성 커져",s+" 업계 ‘조정 올 수도’ 우려",s+" 분야 신중론 고개"]))+(Math.random()<.4?"… 전문가 시각은 엇갈려":"")};
+out.push(sec(ss[0]),sec(ss[1]));const c=pk(G.C),t=Math.random()<.65?c.next>0:c.next<=0;
+out.push("증권가에 "+c.nm+" 관련 소문 확산… "+(t?"긍정적":"부정적")+" 해석이 우세");return out}
 const sys=m=>{LOG.push(m);if(mode=="host")conns.forEach(c=>c.open&&c.send({t:"chat",m}));chat()};
 function pvp(pi,k,t){const p=G.P[pi],q=G.P[t];if(q.shield){q.shield=0;sys("🛡 "+q.nm+"님의 방어막이 공격을 막아냈어요!");return}if(k==9)return mna(p,q);if(k==7){const x=Math.floor(q.cash*.2);q.cash-=x;p.cash+=x;sys("💸 누군가가 "+q.nm+"님의 현금 "+fmt(x)+" 압수!")}
 else{let b=null,bv=0;G.C.forEach(c=>{const v=(q.hold[c.id]||0)*c.price;if(v>bv){bv=v;b=c}});if(!b){sys("🎯 누군가의 저격이 빗나갔어요 ("+q.nm+"님은 보유 주식 없음)");return}
@@ -700,9 +707,9 @@ const endBody=()=>{const me=ME(),ev=G.ev,mw=ev.mw||(ev.W&&ev.W[me])||[0,0];let d
 return `<div class="eyebrow">급등 TOP3</div>${ev.up.map(row).join("")}<div class="eyebrow">급락 TOP3</div>${ev.dn.map(row).join("")}<div class="eyebrow">순위 변동</div>${ev.rk.map(r=>`<div class="st-rv" style="animation-delay:${(d++)*.18+.3}s"><span>${r.r1}위 ${r.nm}</span><b class="${r.r1<r.r0?"st-u":r.r1>r.r0?"st-d":""}">${r.r1<r.r0?"▲"+(r.r0-r.r1):r.r1>r.r0?"▼"+(r.r1-r.r0):"–"}</b></div>`).join("")}<div class="eyebrow">내 총자산</div><b id="cu" data-a="${mw[0]}" data-b="${mw[1]}" style="font-size:22px;color:var(--ac)">${fmt(mw[0])}</b>`};
 function render(){if(G.ph=="over")return results();const cv=($("#ci")||{}).value||"",me=ME(),p=G.P[me],h=hum(),on=mode!="local",vo=[...G.votes];
 const mk=(c,L)=>{const k=L?"L"+c.id:c.id,pr=L?c.lp:c.price,ch=L?c.lchg:c.chg,q=(L?p.hl:p.hold)[c.id]||0,v=Q[k]||1;
-return `<div class="st-r ${L?"lv":""}"><div class="st-n">${L?'<span class="tag on">레버리지 2x</span> ':""}${c.nm}<small>보유 ${q}주</small></div><div class="st-p">${fmt(pr)}<small class="${cl(ch)}">${ch?pc(ch):"-"}</small></div><div class="st-a"><input class="st-q" type="number" value="${v}" data-v="${v}" oninput="ST.qin(this,'${k}',event)" onkeydown="ST.qkd(this,'${k}',event)"><button class="bt pri" onclick="ST.trade(${c.id},1,${L?1:0})">매수</button><button class="bt" onclick="ST.trade(${c.id},0,${L?1:0})" ${q?"":"disabled"}>매도</button></div></div>`};
+return `<div class="st-r ${L?"lv":""}"><div class="st-n">${L?'<span class="tag on">레버리지 2x</span> ':""}${c.nm} <span class="tag">${TR[c.tr].t}</span><small>보유 ${q}주</small></div><div class="st-p">${fmt(pr)}<small class="${cl(ch)}">${ch?pc(ch):"-"}</small></div><div class="st-a"><input class="st-q" type="number" value="${v}" data-v="${v}" oninput="ST.qin(this,'${k}',event)" onkeydown="ST.qkd(this,'${k}',event)"><button class="bt pri" onclick="ST.trade(${c.id},1,${L?1:0})">매수</button><button class="bt" onclick="ST.trade(${c.id},0,${L?1:0})" ${q?"":"disabled"}>매도</button></div></div>`};
 let body="",title="";
-if(pop=="stk"){title="📊 주식 시장";body=Object.keys(SECT).map(s=>`<div class="eyebrow" style="margin-top:10px">${s}</div>${G.C.filter(c=>c.s==s).map(c=>mk(c)+(c.lev?mk(c,1):"")).join("")}`).join("")+'<p class="sm">↓ 화살표: 살 수 있는 최대 수량<br>같은 종목은 함께 움직이고, 오른 주식은 이어서 오르는 경향이 있어요.</p>'}
+if(pop=="stk"){title="📊 주식 시장";body=Object.keys(SECT).map(s=>`<div class="eyebrow" style="margin-top:10px">${s}</div>${G.C.filter(c=>c.s==s).map(c=>mk(c)+(c.lev?mk(c,1):"")).join("")}`).join("")+'<p class="sm">↓ 화살표: 살 수 있는 최대 수량<br>같은 종목은 함께 움직이고, 오른 주식은 이어서 오르는 경향이 있어요.<br>🛡 안정형: 변동 작음·업종 흐름을 따름 / ⚡ 변동형: 등락 크고 업종과 따로 움직임 / 🧭 업종형: 업종 뉴스에 민감</p>'}
 else if(pop=="rum"){title="📰 이번 턴 찌라시 10개";body='<p class="sm">출처별 적중률: 증권가 80% · 커뮤니티 50% · 루머 30%<br>(30%짜리 루머는 거꾸로 읽는 게 이득일지도?)</p>'+p.rum.map(r=>`<div class="st-i">${r.real?"✅ ":"🗞 "}<span class="tag on">${r.src}</span> ${G.C[r.cid].nm} ${r.up?"상승":"하락"} 예정${r.real?" (참)":""}</div>`).join("")+(p.spy!=null?(()=>{const q=G.P[p.spy],l=G.C.flatMap(c=>[q.hold[c.id]?`${c.nm} ${q.hold[c.id]}주`:null,q.hl[c.id]?`${c.nm} 레버리지 ${q.hl[c.id]}주`:null]).filter(Boolean).join(", ")||"보유 주식 없음";return `<div class="st-i">🔍 ${q.nm} 보유: ${l}</div>`})():"")}
 else if(pop=="aug"){title="🃏 내 증강";body=p.hand.map((k,i)=>`<div class="st-i row" style="justify-content:space-between;flex-wrap:nowrap"><span><b>${AUG[k][0]}</b><br><span class="sm">${AUG[k][1]}</span></span><button class="bt" onclick="ST.use(${i})">사용</button></div>`).join("")+p.btc.map((b,j)=>`<div class="st-i row" style="justify-content:space-between;flex-wrap:nowrap"><span>₿ 비트코인 <b>${fmt(b.v)}</b></span><button class="bt" onclick="ST.sell(${j})">판매</button></div>`).join("")||'<span class="sm">없음</span>'}
 const popH=pop?`<div class="st-ov" onclick="if(event.target==this)ST.pop(null)"><div class="gcard st-pop"><div class="row" style="justify-content:space-between;align-items:center;margin:0"><h2 class="h2" style="margin:0">${title}</h2><button class="bt" onclick="ST.pop(null)">✕</button></div>${body}</div></div>`:"";
@@ -711,7 +718,7 @@ A().innerHTML=`<div class="stg"><div class="stat"><b>${G.round} / ${G.T}턴${G.r
 <div class="row" style="margin:0">${on?`<button class="bt ${vo.includes(me)?"on":""}" onclick="ST.skip()">⏭ 스킵 ${vo.length}/${h.length}</button>`:h.map(i=>`<button class="bt ${vo.includes(i)?"on":""}" onclick="ST.skip(${i})">${G.P[i].nm} 스킵 ${vo.includes(i)?"✔":""}</button>`).join("")}<span class="sm" style="align-self:center">과반수면 다음 턴</span></div>
 <div class="st-cashrow">${G.P.map((q,i)=>`<div class="st-c ${i==me?"me":""}"><span>${G.rk?"#"+G.rk[i]+" ":""}${q.nm}</span><b>${fmt(q.cash)}</b></div>`).join("")}</div>
 ${on?"":`<div class="row" style="margin:0">${h.map(i=>`<button class="bt ${i==G.cur?"on":""}" onclick="ST.cur(${i})">${G.P[i].nm}</button>`).join("")}</div>`}
-<div class="gcard st-chatbox"><div class="eyebrow">채팅 · 정보 공유 / 거짓 정보</div><div id="chat" class="st-chat"></div><div class="row" style="margin:0"><input id="ci" placeholder="메시지" onkeydown="if(event.key=='Enter')ST.say()"><button class="bt" onclick="ST.say()">전송</button></div></div>
+${(G.news||[]).length?`<div class="gcard st-news"><div class="eyebrow">📢 오늘의 뉴스</div>${G.news.map(n=>`<div>· ${n}</div>`).join("")}</div>`:""}<div class="gcard st-chatbox"><div class="eyebrow">채팅 · 정보 공유 / 거짓 정보</div><div id="chat" class="st-chat"></div><div class="row" style="margin:0"><input id="ci" placeholder="메시지" onkeydown="if(event.key=='Enter')ST.say()"><button class="bt" onclick="ST.say()">전송</button></div></div>
 <div class="st-bar"><button class="bt pri" onclick="ST.pop('stk')">📊 주식</button><button class="bt" onclick="ST.pop('rum')">📰 찌라시</button><button class="bt" onclick="ST.pop('aug')">🃏 증강 ${p.hand.length+p.btc.length}</button><button class="bt" onclick="ST.draw()" ${p.cash<p.cost?"disabled":""}>뽑기 ${fmt(p.cost)}</button></div></div>${popH}${ban}`;
 const ci=$("#ci");if(ci)ci.value=cv;chat();const cu=$("#cu");if(cu){const a=+cu.dataset.a,b=+cu.dataset.b,t0=performance.now(),st=t=>{const k=Math.max(0,Math.min(1,(t-t0-1500)/1600));cu.textContent=fmt(a+(b-a)*k);if(k<1&&cu.isConnected)requestAnimationFrame(st)};requestAnimationFrame(st)}}
 })();
